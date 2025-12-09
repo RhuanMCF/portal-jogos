@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Meu Portal de Jogos</title>
+  <style>
+    body { 
+      margin: 0; 
+      background: linear-gradient(135deg, #0a0a15, #1a1a2e); 
+      color: white; 
+      font-family: Arial, sans-serif; 
+      text-align: center; 
+      padding: 40px; 
+    }
+    h1 { 
+      font-size: 3em; 
+      margin-bottom: 50px; 
+      text-shadow: 0 0 20px rgba(0,255,100,0.5); 
+    }
+    .jogos { 
+      display: flex; 
+      flex-wrap: wrap; 
+      gap: 30px; 
+      justify-content: center; 
+    }
+    .card { 
+      width: 300px; 
+      background: #1a1a2e; 
+      padding: 20px; 
+      border-radius: 15px; 
+      box-shadow: 0 0 20px rgba(0,255,100,0.3); 
+      transition: transform 0.3s; 
+    }
+    .card:hover { transform: scale(1.05); }
+    .card a { 
+      color: white; 
+      text-decoration: none; 
+      font-size: 1.5em; 
+      display: block; 
+      margin-top: 10px; 
+    }
+  </style>
+</head>
+<body>
+  <h1>🎮 Meu Portal de Jogos</h1>
+  <div class="jogos">
+    <div class="card">
+      <h2>🐍 Snake Game</h2>
+      <p>Clássico da cobrinha turbinado!</p>
+      <a href="/snake/">▶ JOGAR AGORA</a>
+    </div>
+  </div>
+</body>
+</html>

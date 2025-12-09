@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Snake Game</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="info-panel">
+    <div id="points">POINTS: 0</div>
+    <div id="top">TOP: 0</div>
+    <div class="controls">
+      ← ↑ → ↓ mover<br>
+      SPACE pausa  ESC reset
+    </div>
+  </div>
+
+  <div id="game-container">
+    <canvas id="gc" class="game-canvas" width="600" height="600"></canvas>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
