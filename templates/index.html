@@ -12,11 +12,41 @@
       font-family: Arial, sans-serif; 
       text-align: center; 
       padding: 40px; 
+      min-height: 100vh;
+      overflow: hidden;
+      box-sizing: border-box;
     }
     h1 { 
       font-size: 3em; 
       margin-bottom: 50px; 
       text-shadow: 0 0 20px rgba(0,255,100,0.5); 
+    }
+    .user-header {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    .welcome-msg {
+      color: #00ff64;
+      font-size: 18px;
+    }
+    .logout-btn {
+      padding: 8px 16px;
+      background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+      color: white;
+      text-decoration: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: bold;
+      transition: transform 0.3s;
+      box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
+    }
+    .logout-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(255, 107, 107, 0.5);
     }
     .jogos { 
       display: flex; 
@@ -44,12 +74,29 @@
 </head>
 <body>
   <h1>🎮 Meu Portal de Jogos</h1>
+  
+  {% if session.usuario %}
+  <div class="user-header">
+    <span class="welcome-msg">Bem-vindo, <strong>{{ session.usuario }}</strong>!</span>
+    <a href="/logout" class="logout-btn">🚪 SAIR</a>
+  </div>
+  {% endif %}
+  
   <div class="jogos">
+    {% if usuario %}
     <div class="card">
       <h2>🐍 Snake Game</h2>
       <p>Clássico da cobrinha turbinado!</p>
       <a href="/snake/">▶ JOGAR AGORA</a>
     </div>
+    {% endif %}
+    {% if not usuario %}
+    <div class="card">
+      <h2>🔐 Sistema de Login</h2>
+      <p>Acesse áreas restritas por usuário</p>
+      <a href="/login">🚪 ENTRAR</a>
+    </div>
+    {% endif %}
   </div>
 </body>
 </html>

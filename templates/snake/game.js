@@ -1,6 +1,6 @@
 var Snake = (function () {
   const INITIAL_TAIL = 4;
-  var fixedTail = true;
+  var fixedTail = false;
   var intervalID;
 
   var tileCount = 15;
@@ -20,11 +20,118 @@ var Snake = (function () {
   Object.freeze(ActionEnum);
   var lastAction = ActionEnum.none;
 
+  var bestScores = [];
+
+  // Limpa duplicatas mantendo apenas o melhor recorde de cada usuário
+  function cleanDuplicateScores() {
+    const userBestScores = {};
+
+    // Para cada recorde, mantém apenas o melhor score de cada usuário
+    bestScores.forEach(record => {
+      // Exclui entradas vazias e nomes padrão que não são usuários reais
+      if (record.name !== '---' && record.name !== 'Jogador' && record.name.trim() !== '') {
+        if (!userBestScores[record.name] || record.score > userBestScores[record.name]) {
+          userBestScores[record.name] = record.score;
+        }
+      }
+    });
+
+    // Converte de volta para o formato do array
+    const cleanedScores = [];
+    for (const [name, score] of Object.entries(userBestScores)) {
+      cleanedScores.push({ name: name, score: score });
+    }
+
+    // Adiciona entradas vazias se necessário para manter 5 posições
+    while (cleanedScores.length < 5) {
+      cleanedScores.push({ name: '---', score: 0 });
+    }
+
+    // Ordena por pontuação decrescente e mantém top 5
+    bestScores = cleanedScores.sort((a, b) => b.score - a.score).slice(0, 5);
+
+    // Salva os dados limpos
+    saveBestScores();
+  }
+
+  // Carrega os melhores recordes do localStorage
+  function loadBestScores() {
+    try {
+      const saved = localStorage.getItem('snakeBestScores');
+      if (saved) {
+        bestScores = JSON.parse(saved);
+        // Limpa duplicatas mantendo apenas o melhor recorde de cada usuário
+        cleanDuplicateScores();
+      } else {
+        bestScores = [
+          { name: '---', score: 0 },
+          { name: '---', score: 0 },
+          { name: '---', score: 0 },
+          { name: '---', score: 0 },
+          { name: '---', score: 0 }
+        ];
+      }
+      updateBestScoresDisplay();
+    } catch (e) {
+      console.log('localStorage não disponível, usando valores padrão');
+      bestScores = [
+        { name: '---', score: 0 },
+        { name: '---', score: 0 },
+        { name: '---', score: 0 },
+        { name: '---', score: 0 },
+        { name: '---', score: 0 }
+      ];
+      updateBestScoresDisplay();
+    }
+  }
+
+  // Salva os melhores recordes no localStorage
+  function saveBestScores() {
+    try {
+      localStorage.setItem('snakeBestScores', JSON.stringify(bestScores));
+    } catch (e) {
+      console.log('Não foi possível salvar no localStorage');
+    }
+  }
+
+  // Atualiza o display dos melhores recordes
+  function updateBestScoresDisplay() {
+    const scoreElements = document.querySelectorAll('.best-score');
+    bestScores.forEach((score, index) => {
+      scoreElements[index].textContent = `${index + 1}. ${score.name} : ${score.score}`;
+    });
+  }
+
+  // Adiciona um novo recorde
+  function addBestScore(name, score) {
+    // Verifica se o usuário já tem um recorde
+    const existingIndex = bestScores.findIndex(record => record.name === name);
+
+    if (existingIndex !== -1) {
+      // Se o usuário já existe, só atualiza se a nova pontuação for maior
+      if (score > bestScores[existingIndex].score) {
+        bestScores[existingIndex].score = score;
+      } else {
+        // Se não for maior, não faz nada (não adiciona entrada duplicada)
+        return;
+      }
+    } else {
+      // Se o usuário não existe, adiciona normalmente
+      bestScores.push({ name: name, score: score });
+    }
+
+    bestScores.sort((a, b) => b.score - a.score);
+    bestScores = bestScores.slice(0, 5); // Mantém apenas os top 5
+    saveBestScores();
+    updateBestScoresDisplay();
+  }
+
   var canv, ctx;
 
   function setup() {
     canv = document.getElementById('gc');
     ctx = canv.getContext('2d');
+    loadBestScores();
     game.reset();
   }
 
@@ -42,7 +149,7 @@ var Snake = (function () {
       game.RandomFruit();
 
       document.getElementById('points').textContent = 'POINTS: 0';
-      document.getElementById('top').textContent = 'TOP: 0';
+      document.getElementById('top').textContent = 'TOP: ' + pointsMax;
     },
 
     action: {
@@ -62,6 +169,14 @@ var Snake = (function () {
 
       player.x += velocity.x;
       player.y += velocity.y;
+
+      // atualiza a última ação apenas após o movimento
+      if (!stopped) {
+        if (velocity.x === 0 && velocity.y === -1) lastAction = ActionEnum.up;
+        else if (velocity.x === 0 && velocity.y === 1) lastAction = ActionEnum.down;
+        else if (velocity.x === -1 && velocity.y === 0) lastAction = ActionEnum.left;
+        else if (velocity.x === 1 && velocity.y === 0) lastAction = ActionEnum.right;
+      }
 
       // atravessa as bordas
       if (player.x < 0) player.x = tileCount - 1;
@@ -119,7 +234,46 @@ var Snake = (function () {
 
   return {
     start: function (fps = 15) {
-      window.onload = setup;
+      window.onload = function() {
+        setup();
+        // Adiciona event listener para o botão salvar
+        document.getElementById('save-score').addEventListener('click', function() {
+          // Pega o valor do TOP (recorde pessoal da sessão)
+          const topText = document.getElementById('top').textContent;
+          const topScore = parseInt(topText.replace('TOP: ', '')) || 0;
+
+          // Verifica se é um novo recorde
+          const userRecords = bestScores.filter(record => record.name === window.currentUser);
+          const userBestScore = userRecords.length > 0 ? Math.max(...userRecords.map(r => r.score)) : 0;
+
+          if (topScore <= userBestScore && userBestScore > 0) {
+            // Mensagens engraçadas para recordes ruins
+            const funnyMessages = [
+              "🚫 Eita! Isso foi pior que uma lesma com jetpack! Tenta de novo! 🐌",
+              "😅 Seu recorde atual ri da sua cara! Vai, mostra pra ele quem manda! 💪",
+              "🎯 Errou feio! Até meu avô joga melhor que isso! Tenta outra vez! 👴",
+              "🤣 Que pontuação ridícula! Vai lavar a mão e volta! 🧼",
+              "💩 Isso foi tão ruim que até o jogo ficou com vergonha! Tenta de novo! 😳",
+              "🎪 Circense! Você conseguiu perder pro seu próprio recorde! 👏",
+              "🤡 Palhaço! Seu recorde tá rindo tanto que tá doendo a barriga! 😂",
+              "🗑️ Essa pontuação vai pro lixo! Tira uma folga e volta melhor! 🗑️"
+            ];
+
+            const randomMessage = funnyMessages[Math.floor(Math.random() * funnyMessages.length)];
+            alert(randomMessage);
+            return;
+          }
+
+          if (topScore > 0) {
+            const name = window.currentUser || prompt('Digite seu nome para o recorde:');
+            if (name && name.trim() !== '') {
+              addBestScore(name.trim(), topScore);
+            }
+          } else {
+            alert('Faça pontos primeiro!');
+          }
+        });
+      };
       intervalID = setInterval(game.loop, 1000 / fps);
     }
   };

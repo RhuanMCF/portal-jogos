@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>{{ usuario }} - Portal de Jogos</title>
+<style>
+    body {
+      margin: 0;
+      background: linear-gradient(135deg, #0a0a15, #1a1a2e);
+      color: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 40px;
+      min-height: 100vh;
+      overflow: hidden;
+      box-sizing: border-box;
+    }
+    .user-card {
+      width: 500px;
+      background: #1a1a2e;
+      padding: 40px;
+      border-radius: 15px;
+      box-shadow: 0 0 20px rgba(0,255,100,0.3);
+      text-align: center;
+      margin: 0 auto;
+    }
+    h1 {
+      font-size: 2.5em;
+      margin-bottom: 20px;
+      text-shadow: 0 0 20px rgba(0,255,100,0.5);
+      color: #00ff64;
+    }
+    .welcome-msg {
+      font-size: 18px;
+      margin-bottom: 30px;
+      color: #ccc;
+    }
+    .user-info {
+      background: rgba(0,255,100,0.1);
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 30px;
+      border: 1px solid #00ff64;
+    }
+    .user-name {
+      font-size: 24px;
+      font-weight: bold;
+      color: #00ff64;
+    }
+    .logout-btn {
+      display: inline-block;
+      padding: 15px 30px;
+      background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: bold;
+      transition: transform 0.3s;
+      box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+    }
+    .logout-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(255, 107, 107, 0.5);
+    }
+    .back-link {
+      margin-top: 20px;
+      display: inline-block;
+      color: #00ff64;
+      text-decoration: none;
+      font-size: 16px;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+    .games-section {
+      margin-top: 30px;
+      padding-top: 30px;
+      border-top: 1px solid #333;
+    }
+    .games-section h3 {
+      color: #00ff64;
+      margin-bottom: 20px;
+    }
+    .game-link {
+      display: inline-block;
+      margin: 10px;
+      padding: 15px 25px;
+      background: linear-gradient(135deg, #4a9eff, #3a7bd5);
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: bold;
+      transition: transform 0.3s;
+      box-shadow: 0 4px 15px rgba(74, 158, 255, 0.3);
+    }
+    .game-link:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(74, 158, 255, 0.5);
+    }
+</style>
+</head>
+<body>
+<div class="user-card">
+    <h1>👤 Bem-vindo!</h1>
+    <div class="user-info">
+        <div class="user-name">{{ usuario }}</div>
+        <div class="welcome-msg">Você está logado no sistema</div>
+    </div>
+
+    <div class="games-section">
+        <h3>🎮 Jogos Disponíveis</h3>
+        <a href="/snake/" class="game-link">🐍 Snake Game</a>
+    </div>
+
+    <br><br>
+    <a href="/logout" class="logout-btn">🚪 SAIR DO SISTEMA</a>
+    <br>
+    <a href="/" class="back-link">← Voltar ao Portal</a>
+</div>
+</body>
+</html>

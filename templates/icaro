@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Ícaro - Portal de Jogos</title>
+<style>
+    body {
+      margin: 0;
+      background: linear-gradient(135deg, #0a0a15, #1a1a2e);
+      color: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 40px;
+      min-height: 100vh;
+      overflow: hidden;
+      box-sizing: border-box;
+    }
+    header {
+      font-size: 2.5em;
+      margin-bottom: 40px;
+      text-shadow: 0 0 20px rgba(0,255,100,0.5);
+      color: #00ff64;
+    }
+    .icaro-card {
+      width: 350px;
+      height: 350px;
+      margin: 0 auto 40px;
+      perspective: 1000px;
+      cursor: pointer;
+    }
+    .inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.8s;
+      transform-style: preserve-3d;
+    }
+    .icaro-card.flip .inner {
+      transform: rotateY(180deg);
+    }
+    .front, .back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      border-radius: 20px;
+      box-shadow: 0 0 20px rgba(0,255,100,0.3);
+    }
+    .front {
+      background: url("{{ url_for('static', filename='imagens/foto2.png') }}") center/cover;
+    }
+    .back {
+      background: linear-gradient(135deg, #1a1a2e, #2a2a3e);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      padding: 20px;
+      transform: rotateY(180deg);
+      text-align: center;
+      border: 2px solid #00ff64;
+    }
+    .message {
+      font-size: 28px;
+      font-weight: bold;
+      color: #ff6b6b;
+      text-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
+    }
+    .logout-btn {
+      display: inline-block;
+      padding: 15px 30px;
+      background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: bold;
+      transition: transform 0.3s;
+      box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+    }
+    .logout-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(255, 107, 107, 0.5);
+    }
+    .back-link {
+      margin-top: 20px;
+      display: inline-block;
+      color: #00ff64;
+      text-decoration: none;
+      font-size: 16px;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+</style>
+</head>
+<body>
+<header>👋 Olá, Ícaro!</header>
+<div class="icaro-card" onclick="this.classList.toggle('flip')">
+    <div class="inner">
+        <div class="front"></div>
+        <div class="back">
+            <div class="message">NÃO USEM DROGAS</div>
+        </div>
+    </div>
+</div>
+<a href="/logout" class="logout-btn">🚪 SAIR DO SISTEMA</a>
+<br>
+<a href="/" class="back-link">← Voltar ao Portal</a>
+</body>
+</html>

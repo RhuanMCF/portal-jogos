@@ -9,6 +9,9 @@
 <body>
 
   <div class="info-panel">
+    {% if usuario %}
+    <div class="user-info">👤 {{ usuario }}</div>
+    {% endif %}
     <div id="points">POINTS: 0</div>
     <div id="top">TOP: 0</div>
     <div class="controls">
@@ -21,6 +24,26 @@
     <canvas id="gc" class="game-canvas" width="600" height="600"></canvas>
   </div>
 
+  <div class="best-panel">
+    <div class="best-title">BEST</div>
+    <div id="best-scores">
+      <div class="best-score">1. --- : 0</div>
+      <div class="best-score">2. --- : 0</div>
+      <div class="best-score">3. --- : 0</div>
+      <div class="best-score">4. --- : 0</div>
+      <div class="best-score">5. --- : 0</div>
+    </div>
+    <button id="save-score" class="save-btn">SALVAR RECORDE</button>
+  </div>
+
   <script src="game.js"></script>
+  <script>
+    // Define o usuário atual para o jogo
+    {% if usuario %}
+    window.currentUser = "{{ usuario }}";
+    {% else %}
+    window.currentUser = null;
+    {% endif %}
+  </script>
 </body>
 </html>

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Registro - Portal de Jogos</title>
+<style>
+    body {
+      margin: 0;
+      background: linear-gradient(135deg, #0a0a15, #1a1a2e);
+      color: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 40px;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      box-sizing: border-box;
+    }
+    .register-card {
+      width: 400px;
+      background: #1a1a2e;
+      padding: 40px;
+      border-radius: 15px;
+      box-shadow: 0 0 20px rgba(0,255,100,0.3);
+      text-align: center;
+    }
+    h2 {
+      font-size: 2.5em;
+      margin-bottom: 30px;
+      text-shadow: 0 0 20px rgba(0,255,100,0.5);
+      color: #00ff64;
+    }
+    input {
+      width: 100%;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 8px;
+      border: 1px solid #333;
+      background: #2a2a3e;
+      color: white;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+    input:focus {
+      outline: none;
+      border-color: #00ff64;
+      box-shadow: 0 0 10px rgba(0,255,100,0.5);
+    }
+    button {
+      width: 100%;
+      padding: 15px;
+      margin-top: 20px;
+      background: linear-gradient(135deg, #00ff64, #00cc52);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 0.3s;
+      box-shadow: 0 4px 15px rgba(0,255,100,0.3);
+    }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0,255,100,0.5);
+    }
+    .erro {
+      color: #ff6b6b;
+      margin-top: 15px;
+      font-weight: bold;
+      background: rgba(255, 107, 107, 0.1);
+      padding: 10px;
+      border-radius: 5px;
+      border-left: 3px solid #ff6b6b;
+    }
+    .success {
+      color: #00ff64;
+      margin-top: 15px;
+      font-weight: bold;
+      background: rgba(0, 255, 100, 0.1);
+      padding: 10px;
+      border-radius: 5px;
+      border-left: 3px solid #00ff64;
+    }
+    .back-link {
+      margin-top: 20px;
+      display: inline-block;
+      color: #00ff64;
+      text-decoration: none;
+      font-size: 16px;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+    .login-link {
+      margin-top: 15px;
+      display: inline-block;
+      color: #4a9eff;
+      text-decoration: none;
+      font-size: 16px;
+    }
+    .login-link:hover {
+      text-decoration: underline;
+    }
+</style>
+</head>
+<body>
+<div class="register-card">
+    <h2>📝 Registrar</h2>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                {% if 'sucesso' in message %}
+                    <div class="success">{{ message }}</div>
+                {% else %}
+                    <div class="erro">{{ message }}</div>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    <form method="post">
+        <input type="text" name="usuario" placeholder="Nome de usuário" required autofocus>
+        <input type="password" name="senha" placeholder="Senha" required>
+        <input type="password" name="confirmar_senha" placeholder="Confirmar senha" required>
+        <button type="submit">🎮 CRIAR CONTA</button>
+    </form>
+    <a href="/login" class="login-link">Já tenho conta - Fazer login</a>
+    <br>
+    <a href="/" class="back-link">← Voltar ao Portal</a>
+</div>
+</body>
+</html>
