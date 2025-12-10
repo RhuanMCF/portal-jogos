@@ -19,6 +19,7 @@ var Snake = (function () {
   var ActionEnum = { 'none': 0, 'up': 1, 'down': 2, 'left': 3, 'right': 4 };
   Object.freeze(ActionEnum);
   var lastAction = ActionEnum.none;
+  var nextAction = ActionEnum.none; // Ação pendente para o próximo frame
 
   var bestScores = [];
 
@@ -153,10 +154,10 @@ var Snake = (function () {
     },
 
     action: {
-      up:    () => { if (lastAction !== ActionEnum.down)  velocity = { x: 0, y: -1 }; },
-      down:  () => { if (lastAction !== ActionEnum.up)    velocity = { x: 0, y: 1 }; },
-      left:  () => { if (lastAction !== ActionEnum.right) velocity = { x: -1, y: 0 }; },
-      right: () => { if (lastAction !== ActionEnum.left)  velocity = { x: 1, y: 0 }; }
+      up:    () => { if (lastAction !== ActionEnum.down)  { velocity = { x: 0, y: -1 }; nextAction = ActionEnum.up; } },
+      down:  () => { if (lastAction !== ActionEnum.up)    { velocity = { x: 0, y: 1 }; nextAction = ActionEnum.down; } },
+      left:  () => { if (lastAction !== ActionEnum.right) { velocity = { x: -1, y: 0 }; nextAction = ActionEnum.left; } },
+      right: () => { if (lastAction !== ActionEnum.left)  { velocity = { x: 1, y: 0 }; nextAction = ActionEnum.right; } }
     },
 
     RandomFruit: function () {
@@ -167,16 +168,14 @@ var Snake = (function () {
     loop: function () {
       const stopped = velocity.x === 0 && velocity.y === 0;
 
+      // Atualiza a última ação ANTES do movimento
+      if (nextAction !== ActionEnum.none) {
+        lastAction = nextAction;
+        nextAction = ActionEnum.none;
+      }
+
       player.x += velocity.x;
       player.y += velocity.y;
-
-      // atualiza a última ação apenas após o movimento
-      if (!stopped) {
-        if (velocity.x === 0 && velocity.y === -1) lastAction = ActionEnum.up;
-        else if (velocity.x === 0 && velocity.y === 1) lastAction = ActionEnum.down;
-        else if (velocity.x === -1 && velocity.y === 0) lastAction = ActionEnum.left;
-        else if (velocity.x === 1 && velocity.y === 0) lastAction = ActionEnum.right;
-      }
 
       // atravessa as bordas
       if (player.x < 0) player.x = tileCount - 1;
@@ -279,4 +278,4 @@ var Snake = (function () {
   };
 })();
 
-Snake.start(5);
+Snake.start(10);
