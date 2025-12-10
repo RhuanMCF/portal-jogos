@@ -24,14 +24,11 @@ def portal():
     usuario = session.get('usuario')
     return render_template('index.html', usuario=usuario)
 
-# Rota para o Snake (e qualquer outro jogo que você colocar em subpastas)
+# Rota para o Snake
 @app.route('/snake/')
-@app.route('/snake/<path:filename>')
-def snake(filename='index.html'):
+def snake():
     usuario = session.get('usuario')
-    if filename == 'index.html':
-        return render_template('snake/index.html', usuario=usuario)
-    return send_from_directory('templates/snake', filename)
+    return render_template('snake/index.html', usuario=usuario)
 
 # Sistema de Login do Novo Projeto
 @app.route('/login', methods=['GET', 'POST'])
