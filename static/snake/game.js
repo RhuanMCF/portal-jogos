@@ -99,40 +99,27 @@ var Snake = (function () {
   function updateBestScoresDisplay() {
     const scoreElements = document.querySelectorAll('.best-score');
     bestScores.forEach((score, index) => {
-      scoreElements[index].textContent = `${index + 1}. ${score.name} : ${score.score}`;
+      scoreElements[index].textContent = `${index + 1}. ${score.nome || score.name} : ${score.pontuacao || score.score}`;
     });
   }
 
-  // Adiciona um novo recorde
-  function addBestScore(name, score) {
-    // Verifica se o usuário já tem um recorde
-    const existingIndex = bestScores.findIndex(record => record.name === name);
-
-    if (existingIndex !== -1) {
-      // Se o usuário já existe, só atualiza se a nova pontuação for maior
-      if (score > bestScores[existingIndex].score) {
-        bestScores[existingIndex].score = score;
-      } else {
-        // Se não for maior, não faz nada (não adiciona entrada duplicada)
-        return;
-      }
+  // Adiciona um novo recorde (agora usa API)
+  async function addBestScore(name, score) {
+    // Salva no servidor
+    const success = await saveBestScore(name, score);
+    if (success) {
+      console.log('Recorde salvo com sucesso!');
     } else {
-      // Se o usuário não existe, adiciona normalmente
-      bestScores.push({ name: name, score: score });
+      console.log('Erro ao salvar recorde');
     }
-
-    bestScores.sort((a, b) => b.score - a.score);
-    bestScores = bestScores.slice(0, 5); // Mantém apenas os top 5
-    saveBestScores();
-    updateBestScoresDisplay();
   }
 
   var canv, ctx;
 
-  function setup() {
+  async function setup() {
     canv = document.getElementById('gc');
     ctx = canv.getContext('2d');
-    loadBestScores();
+    await loadBestScores();
     game.reset();
   }
 
@@ -220,21 +207,27 @@ var Snake = (function () {
 
   // teclado
   document.addEventListener('keydown', function (e) {
-    switch (e.keyCode) {
-      case 37: game.action.left();  break;
-      case 38: game.action.up();    break;
-      case 39: game.action.right(); break;
-      case 40: game.action.down();  break;
-      case 32: velocity = { x: 0, y: 0 }; break; // space
-      case 27: game.reset();        break; // esc
+    // Só previne default para teclas que o jogo usa
+    var gameKeys = [37, 38, 39, 40, 32, 27]; // ← ↑ → ↓ SPACE ESC
+
+    if (gameKeys.includes(e.keyCode)) {
+      switch (e.keyCode) {
+        case 37: game.action.left();  break;
+        case 38: game.action.up();    break;
+        case 39: game.action.right(); break;
+        case 40: game.action.down();  break;
+        case 32: velocity = { x: 0, y: 0 }; break; // space
+        case 27: game.reset();        break; // esc
+      }
+      e.preventDefault();
     }
-    e.preventDefault();
+    // Outras teclas/combinações (como Ctrl + - para zoom) funcionam normalmente
   });
 
   return {
     start: function (fps = 15) {
-      window.onload = function() {
-        setup();
+      window.onload = async function() {
+        await setup();
         // Adiciona event listener para o botão salvar
         document.getElementById('save-score').addEventListener('click', function() {
           // Pega o valor do TOP (recorde pessoal da sessão)
@@ -242,8 +235,8 @@ var Snake = (function () {
           const topScore = parseInt(topText.replace('TOP: ', '')) || 0;
 
           // Verifica se é um novo recorde
-          const userRecords = bestScores.filter(record => record.name === window.currentUser);
-          const userBestScore = userRecords.length > 0 ? Math.max(...userRecords.map(r => r.score)) : 0;
+          const userRecords = bestScores.filter(record => (record.nome || record.name) === window.currentUser);
+          const userBestScore = userRecords.length > 0 ? Math.max(...userRecords.map(r => r.pontuacao || r.score)) : 0;
 
           if (topScore <= userBestScore && userBestScore > 0) {
             // Mensagens engraçadas para recordes ruins
