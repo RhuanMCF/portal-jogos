@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Snake Game</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='snake/style.css') }}">
 </head>
 <body>
 
@@ -36,7 +36,7 @@
     <button id="save-score" class="save-btn">SALVAR RECORDE</button>
   </div>
 
-  <script src="game.js"></script>
+  <script src="{{ url_for('static', filename='snake/game.js') }}"></script>
   <script>
     // Define o usuário atual para o jogo
     {% if usuario %}

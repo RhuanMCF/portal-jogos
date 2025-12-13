@@ -26,3 +26,8 @@ coverage.xml
 *.swp
 *.swo
 *~
+
+# Environment variables
+.env
+.env.local
+.env.production
