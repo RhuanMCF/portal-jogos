@@ -194,11 +194,6 @@ def logout():
     session.clear()
     return redirect('/')
 
-# Rota para servir imagens do novo projeto
-@app.route('/imagens/<path:filename>')
-def imagens(filename):
-    return send_from_directory('static/imagens', filename)
-
 # Você pode adicionar mais jogos assim:
 # @app.route('/pong/') ... etc
 
