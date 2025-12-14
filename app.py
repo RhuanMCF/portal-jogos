@@ -85,17 +85,12 @@ def save_recorde():
             return jsonify({'error': 'Pontuação inválida'}), 400
 
         if supabase:
-            # Verificar se o usuário já tem score, se sim atualizar, senão inserir
-            existing = supabase.table('high_scores').select('score').eq('username', username).execute()
-            if existing.data:
-                # Atualizar score existente
-                response = supabase.table('high_scores').update({'score': score}).eq('username', username).execute()
-            else:
-                # Inserir novo
-                response = supabase.table('high_scores').insert({
-                    'username': username,
-                    'score': score
-                }).execute()
+            # Deletar scores antigos do usuário e inserir o novo
+            supabase.table('high_scores').delete().eq('username', username).execute()
+            response = supabase.table('high_scores').insert({
+                'username': username,
+                'score': score
+            }).execute()
 
             return jsonify({'success': True, 'message': 'Recorde salvo!'})
         else:

@@ -234,11 +234,15 @@ var Snake = (function () {
       // corpo da cobra
       ctx.fillStyle = 'green';
       for (let i = 0; i < trail.length - 1; i++) {
-        ctx.fillRect(trail[i].x * gridSize + 1, trail[i].y * gridSize + 1, gridSize - 2, gridSize - 2);
-        if (trail[i].x === player.x && trail[i].y === player.y) game.reset();
+        if (trail[i]) {
+          ctx.fillRect(trail[i].x * gridSize + 1, trail[i].y * gridSize + 1, gridSize - 2, gridSize - 2);
+          if (trail[i].x === player.x && trail[i].y === player.y) game.reset();
+        }
       }
       ctx.fillStyle = 'lime';
-      ctx.fillRect(trail[trail.length - 1].x * gridSize + 1, trail[trail.length - 1].y * gridSize + 1, gridSize - 2, gridSize - 2);
+      if (trail.length > 0 && trail[trail.length - 1]) {
+        ctx.fillRect(trail[trail.length - 1].x * gridSize + 1, trail[trail.length - 1].y * gridSize + 1, gridSize - 2, gridSize - 2);
+      }
 
       // comer fruta
       if (player.x === fruit.x && player.y === fruit.y) {
