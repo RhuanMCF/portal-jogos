@@ -40,9 +40,20 @@ def get_recordes():
     """Retorna os top 5 recordes globais"""
     try:
         if supabase:
-            # Buscar os melhores scores (um por usuário, o máximo)
-            response = supabase.table('high_scores').select('username, max(score) as score').group('username').order('score', desc=True).limit(5).execute()
-            recordes = response.data
+            # Buscar todos os scores e agrupar por usuário (manter apenas o melhor)
+            response = supabase.table('high_scores').select('username, score').order('score', desc=True).execute()
+            all_scores = response.data
+            # Agrupar por username, pegar o max score
+            user_max_scores = {}
+            for record in all_scores:
+                username = record['username']
+                score = record['score']
+                if username not in user_max_scores or score > user_max_scores[username]:
+                    user_max_scores[username] = score
+            # Converter para lista e ordenar
+            recordes = [{'username': u, 'score': s} for u, s in user_max_scores.items()]
+            recordes.sort(key=lambda x: x['score'], reverse=True)
+            recordes = recordes[:5]
         else:
             # Fallback para dados locais (se Supabase não configurado)
             recordes = [
