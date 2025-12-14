@@ -155,6 +155,12 @@ var Snake = (function () {
     }
     try {
       console.log('Tentando salvar score no Supabase:', { username: name, score: score });
+      // Primeiro, deleta records antigos do usuário para manter apenas o melhor
+      await supabase
+        .from('high_scores')
+        .delete()
+        .eq('username', name);
+      // Insere o novo score
       const { data, error } = await supabase
         .from('high_scores')
         .insert([{ username: name, score: score }]);
