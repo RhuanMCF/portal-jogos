@@ -41,7 +41,7 @@ def get_recordes():
     try:
         if supabase:
             # Buscar do Supabase
-            response = supabase.table('recordes').select('username, score').order('score', desc=True).limit(5).execute()
+            response = supabase.table('high_scores').select('username, score').order('score', desc=True).limit(5).execute()
             recordes = response.data
         else:
             # Fallback para dados locais (se Supabase não configurado)
@@ -75,7 +75,7 @@ def save_recorde():
 
         if supabase:
             # Salvar no Supabase
-            response = supabase.table('recordes').insert({
+            response = supabase.table('high_scores').insert({
                 'username': username,
                 'score': score
             }).execute()
