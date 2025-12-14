@@ -309,8 +309,11 @@ var Snake = (function () {
           const topText = document.getElementById('top').textContent;
           const topScore = parseInt(topText.replace('TOP: ', '')) || 0;
 
+          // Define o nome do usuário (logado ou prompt)
+          const name = window.currentUser || prompt('Digite seu nome para o recorde:') || 'Teste';
+
           // Verifica se é um novo recorde
-          const userRecords = bestScores.filter(record => record.name === window.currentUser);
+          const userRecords = bestScores.filter(record => record.name === name);
           const userBestScore = userRecords.length > 0 ? Math.max(...userRecords.map(r => r.score)) : 0;
 
           if (topScore <= userBestScore && userBestScore > 0) {
@@ -332,7 +335,6 @@ var Snake = (function () {
           }
 
           if (topScore > 0) {
-            const name = window.currentUser || prompt('Digite seu nome para o recorde:');
             if (name && name.trim() !== '') {
               addBestScore(name.trim(), topScore);
             }
