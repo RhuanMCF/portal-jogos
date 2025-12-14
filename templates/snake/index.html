@@ -37,7 +37,6 @@
     <button onclick="window.location.href='/'" class="exit-btn">SAIR DO JOGO</button>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="{{ url_for('static', filename='snake/game.js') }}"></script>
   <script>
     // Define o usuário atual para o jogo
@@ -46,12 +45,6 @@
     {% else %}
     window.currentUser = null;
     {% endif %}
-
-    // Configuração Supabase para frontend direto
-    window.supabaseConfig = {
-      url: "{{ supabase_url or '' }}",
-      anonKey: "{{ supabase_key or '' }}"
-    };
   </script>
 </body>
 </html>
