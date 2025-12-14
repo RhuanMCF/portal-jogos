@@ -122,3 +122,26 @@ body {
 .save-btn:active {
   transform: translateY(0);
 }
+
+.exit-btn {
+  background: linear-gradient(135deg, #ff4757, #ff3838);
+  color: #fff;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 25px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(255, 71, 87, 0.3);
+  margin-top: 10px;
+}
+
+.exit-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 71, 87, 0.5);
+}
+
+.exit-btn:active {
+  transform: translateY(0);
+}
