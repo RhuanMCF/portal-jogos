@@ -41,16 +41,16 @@ def get_recordes():
     try:
         if supabase:
             # Buscar do Supabase
-            response = supabase.table('recordes').select('nome, pontuacao').order('pontuacao', desc=True).limit(5).execute()
+            response = supabase.table('recordes').select('username, score').order('score', desc=True).limit(5).execute()
             recordes = response.data
         else:
             # Fallback para dados locais (se Supabase não configurado)
             recordes = [
-                {'nome': '---', 'pontuacao': 0},
-                {'nome': '---', 'pontuacao': 0},
-                {'nome': '---', 'pontuacao': 0},
-                {'nome': '---', 'pontuacao': 0},
-                {'nome': '---', 'pontuacao': 0}
+                {'username': '---', 'score': 0},
+                {'username': '---', 'score': 0},
+                {'username': '---', 'score': 0},
+                {'username': '---', 'score': 0},
+                {'username': '---', 'score': 0}
             ]
 
         return jsonify(recordes)
@@ -63,21 +63,21 @@ def save_recorde():
     """Salva um novo recorde"""
     try:
         data = request.get_json()
-        nome = data.get('nome', '').strip()
-        pontuacao = data.get('pontuacao', 0)
+        username = data.get('username', '').strip()
+        score = data.get('score', 0)
 
         # Validações básicas
-        if not nome or len(nome) > 20:
+        if not username or len(username) > 20:
             return jsonify({'error': 'Nome inválido'}), 400
 
-        if not isinstance(pontuacao, int) or pontuacao < 0 or pontuacao > 10000:
+        if not isinstance(score, int) or score < 0 or score > 10000:
             return jsonify({'error': 'Pontuação inválida'}), 400
 
         if supabase:
             # Salvar no Supabase
             response = supabase.table('recordes').insert({
-                'nome': nome,
-                'pontuacao': pontuacao
+                'username': username,
+                'score': score
             }).execute()
 
             return jsonify({'success': True, 'message': 'Recorde salvo!'})

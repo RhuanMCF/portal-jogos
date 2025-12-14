@@ -55,15 +55,45 @@ var Snake = (function () {
     saveBestScores();
   }
 
-  // Carrega os melhores recordes do localStorage
-  function loadBestScores() {
+  // Carrega os melhores recordes do servidor (ou localStorage como fallback)
+  async function loadBestScores() {
     try {
-      const saved = localStorage.getItem('snakeBestScores');
-      if (saved) {
-        bestScores = JSON.parse(saved);
-        // Limpa duplicatas mantendo apenas o melhor recorde de cada usuário
-        cleanDuplicateScores();
+      // Tenta carregar do servidor primeiro
+      const response = await fetch('/api/recordes');
+      if (response.ok) {
+        const serverScores = await response.json();
+        // Converte formato do servidor para o formato local
+        bestScores = serverScores.map(record => ({
+          name: record.username,
+          score: record.score
+        }));
+        // Completa com placeholders se necessário
+        while (bestScores.length < 5) {
+          bestScores.push({ name: '---', score: 0 });
+        }
       } else {
+        throw new Error('Falha ao carregar do servidor');
+      }
+    } catch (e) {
+      console.log('Erro ao carregar do servidor, usando localStorage:', e);
+      // Fallback para localStorage
+      try {
+        const saved = localStorage.getItem('snakeBestScores');
+        if (saved) {
+          bestScores = JSON.parse(saved);
+          // Limpa duplicatas mantendo apenas o melhor recorde de cada usuário
+          cleanDuplicateScores();
+        } else {
+          bestScores = [
+            { name: '---', score: 0 },
+            { name: '---', score: 0 },
+            { name: '---', score: 0 },
+            { name: '---', score: 0 },
+            { name: '---', score: 0 }
+          ];
+        }
+      } catch (localError) {
+        console.log('localStorage não disponível, usando valores padrão');
         bestScores = [
           { name: '---', score: 0 },
           { name: '---', score: 0 },
@@ -72,18 +102,8 @@ var Snake = (function () {
           { name: '---', score: 0 }
         ];
       }
-      updateBestScoresDisplay();
-    } catch (e) {
-      console.log('localStorage não disponível, usando valores padrão');
-      bestScores = [
-        { name: '---', score: 0 },
-        { name: '---', score: 0 },
-        { name: '---', score: 0 },
-        { name: '---', score: 0 },
-        { name: '---', score: 0 }
-      ];
-      updateBestScoresDisplay();
     }
+    updateBestScoresDisplay();
   }
 
   // Salva os melhores recordes no localStorage
@@ -108,9 +128,41 @@ var Snake = (function () {
     // Salva no servidor
     const success = await saveBestScore(name, score);
     if (success) {
-      console.log('Recorde salvo com sucesso!');
+      alert('Recorde salvo com sucesso!');
+      // Recarrega os scores após salvar
+      await loadBestScores();
     } else {
-      console.log('Erro ao salvar recorde');
+      alert('Erro ao salvar recorde. Verifique o console para detalhes.');
+    }
+  }
+
+  // Salva o recorde no servidor via API
+  async function saveBestScore(name, score) {
+    try {
+      console.log('Tentando salvar score:', { username: name, score: score });
+      const response = await fetch('/api/recordes', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: name,
+          score: score
+        })
+      });
+      console.log('Resposta do servidor:', response.status, response.statusText);
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Dados da resposta:', data);
+        return true;
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Erro na resposta:', errorData);
+        return false;
+      }
+    } catch (error) {
+      console.error('Erro ao salvar recorde:', error);
+      return false;
     }
   }
 
@@ -235,8 +287,8 @@ var Snake = (function () {
           const topScore = parseInt(topText.replace('TOP: ', '')) || 0;
 
           // Verifica se é um novo recorde
-          const userRecords = bestScores.filter(record => (record.nome || record.name) === window.currentUser);
-          const userBestScore = userRecords.length > 0 ? Math.max(...userRecords.map(r => r.pontuacao || r.score)) : 0;
+          const userRecords = bestScores.filter(record => record.name === window.currentUser);
+          const userBestScore = userRecords.length > 0 ? Math.max(...userRecords.map(r => r.score)) : 0;
 
           if (topScore <= userBestScore && userBestScore > 0) {
             // Mensagens engraçadas para recordes ruins
