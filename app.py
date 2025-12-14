@@ -112,7 +112,7 @@ def portal():
 @app.route('/snake/')
 def snake():
     usuario = session.get('usuario')
-    return render_template('snake/index.html', usuario=usuario)
+    return render_template('snake/index.html', usuario=usuario, supabase_url=SUPABASE_URL, supabase_key=SUPABASE_KEY)
 
 # Sistema de Login do Novo Projeto
 @app.route('/login', methods=['GET', 'POST'])

@@ -49,8 +49,8 @@
 
     // Configuração Supabase para frontend direto
     window.supabaseConfig = {
-      url: "{{ os.getenv('SUPABASE_URL', '') }}",
-      anonKey: "{{ os.getenv('SUPABASE_ANON_KEY', '') }}"
+      url: "{{ supabase_url or '' }}",
+      anonKey: "{{ supabase_key or '' }}"
     };
   </script>
 </body>
