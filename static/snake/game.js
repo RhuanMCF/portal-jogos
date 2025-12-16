@@ -294,43 +294,7 @@ var Snake = (function () {
     start: function (fps = 15) {
       window.onload = async function() {
         await setup();
-        // Removed save button event listener
-        // removed
-          // Pega o valor do TOP (recorde pessoal da sessão)
-          const topText = document.getElementById('top').textContent;
-          const topScore = parseInt(topText.replace('TOP: ', '')) || 0;
 
-          // Verifica se é um novo recorde
-          const userRecords = bestScores.filter(record => record.name === window.currentUser);
-          const userBestScore = userRecords.length > 0 ? Math.max(...userRecords.map(r => r.score)) : 0;
-
-          if (topScore <= userBestScore && userBestScore > 0) {
-            // Mensagens engraçadas para recordes ruins
-            const funnyMessages = [
-              "🚫 Eita! Isso foi pior que uma lesma com jetpack! Tenta de novo! 🐌",
-              "😅 Seu recorde atual ri da sua cara! Vai, mostra pra ele quem manda! 💪",
-              "🎯 Errou feio! Até meu avô joga melhor que isso! Tenta outra vez! 👴",
-              "🤣 Que pontuação ridícula! Vai lavar a mão e volta! 🧼",
-              "💩 Isso foi tão ruim que até o jogo ficou com vergonha! Tenta de novo! 😳",
-              "🎪 Circense! Você conseguiu perder pro seu próprio recorde! 👏",
-              "🤡 Palhaço! Seu recorde tá rindo tanto que tá doendo a barriga! 😂",
-              "🗑️ Essa pontuação vai pro lixo! Tira uma folga e volta melhor! 🗑️"
-            ];
-
-            const randomMessage = funnyMessages[Math.floor(Math.random() * funnyMessages.length)];
-            alert(randomMessage);
-            return;
-          }
-
-          if (topScore > 0) {
-            const name = window.currentUser || prompt('Digite seu nome para o recorde:');
-            if (name && name.trim() !== '') {
-              addBestScore(name.trim(), topScore);
-            }
-          } else {
-            alert('Faça pontos primeiro!');
-          }
-        });
       };
       intervalID = setInterval(game.loop, 1000 / fps);
     }
