@@ -34,6 +34,8 @@ var Bomberman = (function () {
     // Garantir espaço livre para os inimigos
     map[2][13] = 0; // inimigo 1
     map[13][2] = 0; // inimigo 2
+    map[13][13] = 0; // inimigo 3 (level 2+)
+    map[1][13] = 0; // inimigo 4 (level 3+)
     player.col = 1; player.row = 2;
   }
 
@@ -97,9 +99,13 @@ var Bomberman = (function () {
   function reset() {
     initMap();
     player = { col: 1, row: 2, dir: 1, bombsMax: 1, flameLen: 1, invul: 0, bombCount: 0 };
+    // Add more enemies based on level
     enemies = [{col:13, row:2}, {col:2, row:13}];
+    if (level >= 2) enemies.push({col:13, row:13});
+    if (level >= 3) enemies.push({col:1, row:13});
     bombs = []; flames = []; powerups = [];
-    score = 0; lives = 3; level = 1; enemiesLeft = enemies.length;
+    // Don't reset score, lives, or level
+    enemiesLeft = enemies.length;
     updateHUD();
     gameRunning = true;
     document.getElementById('game-over').style.display = 'none';
@@ -214,6 +220,18 @@ var Bomberman = (function () {
         if (lives <= 0) gameOver();
       }
     });
+    // Check victory condition
+    if (enemiesLeft <= 0) {
+      level++;
+      // Save score if it's a new record
+      if (window.currentUser && score > 0) {
+        addScore(window.currentUser, score);
+      }
+      // Auto reset for next level
+      setTimeout(() => {
+        reset();
+      }, 2000); // 2 second delay to show victory
+    }
     player.invul = Math.max(0, player.invul - 1);
   }
 
@@ -358,7 +376,6 @@ var Bomberman = (function () {
     console.log('Tecla pressionada:', e.key);
     keys[e.key] = true;
     if (e.key === ' ') { e.preventDefault(); keys[' '] = true; }
-    if (e.key === 'Escape') reset();
   });
   document.addEventListener('keyup', e => keys[e.key] = false);
 
@@ -369,7 +386,6 @@ var Bomberman = (function () {
     await loadBestScores();
     reset();
     setInterval(loop, 1000/60); // 60 FPS
-    document.getElementById('reset').onclick = reset;
   };
 
   return { init };
