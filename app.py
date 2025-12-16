@@ -39,9 +39,11 @@ def save_users(users):
 def get_recordes():
     """Retorna os top 5 recordes globais"""
     try:
+        game = request.args.get('game', 'snake')  # Default para snake se não especificado
+
         if supabase:
-            # Buscar os top 5 recordes diretamente
-            response = supabase.table('high_scores').select('username, score').order('score', desc=True).limit(5).execute()
+            # Buscar os top 5 recordes para o jogo específico
+            response = supabase.table('high_scores').select('username, score').eq('game', game).order('score', desc=True).limit(5).execute()
             recordes = [{'username': r['username'], 'score': r['score']} for r in response.data]
         else:
             # Fallback para dados locais (se Supabase não configurado)
@@ -65,6 +67,7 @@ def save_recorde():
         data = request.get_json()
         username = data.get('username', '').strip()
         score = data.get('score', 0)
+        game = data.get('game', 'snake')  # Default para snake
 
         # Validações básicas
         if not username or len(username) > 20:
@@ -74,11 +77,12 @@ def save_recorde():
             return jsonify({'error': 'Pontuação inválida'}), 400
 
         if supabase:
-            # Deletar scores antigos do usuário e inserir o novo
-            supabase.table('high_scores').delete().eq('username', username).execute()
+            # Deletar scores antigos do usuário para este jogo e inserir o novo
+            supabase.table('high_scores').delete().eq('username', username).eq('game', game).execute()
             response = supabase.table('high_scores').insert({
                 'username': username,
-                'score': score
+                'score': score,
+                'game': game
             }).execute()
 
             return jsonify({'success': True, 'message': 'Recorde salvo!'})

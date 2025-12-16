@@ -28,7 +28,7 @@ var Bomberman = (function () {
   // Carrega os melhores recordes do servidor
   async function loadBestScores() {
     try {
-      const response = await fetch('/api/recordes');
+      const response = await fetch('/api/recordes?game=bomberman');
       if (response.ok) {
         const serverScores = await response.json();
         bestScores = serverScores.map(record => ({
@@ -42,7 +42,6 @@ var Bomberman = (function () {
         throw new Error('Falha ao carregar do servidor');
       }
     } catch (e) {
-      console.log('Erro ao carregar do servidor:', e);
       bestScores = [
         { name: '---', score: 0 },
         { name: '---', score: 0 },
@@ -65,10 +64,7 @@ var Bomberman = (function () {
     if (!name || !window.currentUser) return;
     const success = await saveBestScore(name, sc);
     if (success) {
-      alert('Recorde salvo com sucesso!');
       await loadBestScores();
-    } else {
-      alert('Erro ao salvar recorde.');
     }
   }
 
@@ -78,11 +74,10 @@ var Bomberman = (function () {
       const response = await fetch('/api/recordes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: name, score: score })
+        body: JSON.stringify({ username: name, score: score, game: 'bomberman' })
       });
       return response.ok;
     } catch (error) {
-      console.error('Erro ao salvar recorde:', error);
       return false;
     }
   }
@@ -342,7 +337,7 @@ var Bomberman = (function () {
     ctx.imageSmoothingEnabled = false;
     await loadBestScores();
     reset();
-    loop();
+    setInterval(loop, 1000/60); // 60 FPS
     document.getElementById('reset').onclick = reset;
   };
 

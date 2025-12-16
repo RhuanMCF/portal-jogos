@@ -1,6 +1,7 @@
 var Snake = (function () {
   const INITIAL_TAIL = 4;
   var fixedTail = false;
+  var intervalID;
 
   var tileCount = 15;
   var gridSize = 600 / tileCount;
@@ -58,7 +59,7 @@ var Snake = (function () {
   async function loadBestScores() {
     try {
       // Tenta carregar do servidor primeiro
-      const response = await fetch('/api/recordes');
+      const response = await fetch('/api/recordes?game=snake');
       if (response.ok) {
         const serverScores = await response.json();
         // Converte formato do servidor para o formato local
@@ -108,7 +109,7 @@ var Snake = (function () {
     try {
       localStorage.setItem('snakeBestScores', JSON.stringify(bestScores));
     } catch (e) {
-      // Silenciosamente ignora erro de localStorage
+      console.log('Não foi possível salvar no localStorage');
     }
   }
 
@@ -120,10 +121,10 @@ var Snake = (function () {
     });
   }
 
-  // Adiciona um novo recorde (agora usa API)
+  // Adiciona um novo recorde
   async function addBestScore(name, score) {
     // Salva no servidor
-    const success = await saveBestScore(name, score);
+    const success = await saveBestScoreToAPI(name, score);
     if (success) {
       // Recarrega os scores após salvar
       await loadBestScores();
@@ -131,7 +132,7 @@ var Snake = (function () {
   }
 
   // Salva o recorde no servidor via API
-  async function saveBestScore(name, score) {
+  async function saveBestScoreToAPI(name, score) {
     try {
       const response = await fetch('/api/recordes', {
         method: 'POST',
@@ -140,14 +141,11 @@ var Snake = (function () {
         },
         body: JSON.stringify({
           username: name,
-          score: score
+          score: score,
+          game: 'snake'
         })
       });
-      if (response.ok) {
-        return true;
-      } else {
-        return false;
-      }
+      return response.ok;
     } catch (error) {
       return false;
     }
@@ -155,10 +153,10 @@ var Snake = (function () {
 
   var canv, ctx;
 
-  async function setup() {
+  function setup() {
     canv = document.getElementById('gc');
     ctx = canv.getContext('2d');
-    await loadBestScores();
+    loadBestScores();
     game.reset();
   }
 
@@ -221,25 +219,11 @@ var Snake = (function () {
       // corpo da cobra
       ctx.fillStyle = 'green';
       for (let i = 0; i < trail.length - 1; i++) {
-        if (trail[i]) {
-          ctx.fillRect(trail[i].x * gridSize + 1, trail[i].y * gridSize + 1, gridSize - 2, gridSize - 2);
-          if (trail[i].x === player.x && trail[i].y === player.y) {
-            // Game over: verifica se é novo recorde e salva automaticamente
-            const userRecords = bestScores.filter(record => record.name === window.currentUser);
-            const userBestScore = userRecords.length > 0 ? Math.max(...userRecords.map(r => r.score)) : 0;
-            if (pointsMax > userBestScore || userBestScore === 0) {
-              if (window.currentUser && pointsMax > 0) {
-                addBestScore(window.currentUser, pointsMax);
-              }
-            }
-            game.reset();
-          }
-        }
+        ctx.fillRect(trail[i].x * gridSize + 1, trail[i].y * gridSize + 1, gridSize - 2, gridSize - 2);
+        if (trail[i].x === player.x && trail[i].y === player.y) game.reset();
       }
       ctx.fillStyle = 'lime';
-      if (trail.length > 0 && trail[trail.length - 1]) {
-        ctx.fillRect(trail[trail.length - 1].x * gridSize + 1, trail[trail.length - 1].y * gridSize + 1, gridSize - 2, gridSize - 2);
-      }
+      ctx.fillRect(trail[trail.length - 1].x * gridSize + 1, trail[trail.length - 1].y * gridSize + 1, gridSize - 2, gridSize - 2);
 
       // comer fruta
       if (player.x === fruit.x && player.y === fruit.y) {
@@ -260,34 +244,60 @@ var Snake = (function () {
 
   // teclado
   document.addEventListener('keydown', function (e) {
-    // Só previne default para teclas que o jogo usa
-    var gameKeys = [37, 38, 39, 40, 32, 27, 87, 65, 83, 68]; // ← ↑ → ↓ SPACE ESC W A S D
-
-    if (gameKeys.includes(e.keyCode)) {
-      switch (e.keyCode) {
-        case 37: game.action.left();  break;
-        case 38: game.action.up();    break;
-        case 39: game.action.right(); break;
-        case 40: game.action.down();  break;
-        case 32: velocity = { x: 0, y: 0 }; break; // space
-        case 27: game.reset();        break; // esc
-        case 87: game.action.up();    break; // W
-        case 65: game.action.left();  break; // A
-        case 83: game.action.down();  break; // S
-        case 68: game.action.right(); break; // D
-      }
-      e.preventDefault();
+    switch (e.keyCode) {
+      case 37: game.action.left();  break;
+      case 38: game.action.up();    break;
+      case 39: game.action.right(); break;
+      case 40: game.action.down();  break;
+      case 32: velocity = { x: 0, y: 0 }; break; // space
+      case 27: game.reset();        break; // esc
     }
-    // Outras teclas/combinações (como Ctrl + - para zoom) funcionam normalmente
+    e.preventDefault();
   });
 
   return {
     start: function (fps = 15) {
-      window.onload = async function() {
-        await setup();
+      window.onload = function() {
+        setup();
+        // Adiciona event listener para o botão salvar
+        document.getElementById('save-score').addEventListener('click', function() {
+          // Pega o valor do TOP (recorde pessoal da sessão)
+          const topText = document.getElementById('top').textContent;
+          const topScore = parseInt(topText.replace('TOP: ', '')) || 0;
 
+          // Verifica se é um novo recorde
+          const userRecords = bestScores.filter(record => record.name === window.currentUser);
+          const userBestScore = userRecords.length > 0 ? Math.max(...userRecords.map(r => r.score)) : 0;
+
+          if (topScore <= userBestScore && userBestScore > 0) {
+            // Mensagens engraçadas para recordes ruins
+            const funnyMessages = [
+              "🚫 Eita! Isso foi pior que uma lesma com jetpack! Tenta de novo! 🐌",
+              "😅 Seu recorde atual ri da sua cara! Vai, mostra pra ele quem manda! 💪",
+              "🎯 Errou feio! Até meu avô joga melhor que isso! Tenta outra vez! 👴",
+              "🤣 Que pontuação ridícula! Vai lavar a mão e volta! 🧼",
+              "💩 Isso foi tão ruim que até o jogo ficou com vergonha! Tenta de novo! 😳",
+              "🎪 Circense! Você conseguiu perder pro seu próprio recorde! 👏",
+              "🤡 Palhaço! Seu recorde tá rindo tanto que tá doendo a barriga! 😂",
+              "🗑️ Essa pontuação vai pro lixo! Tira uma folga e volta melhor! 🗑️"
+            ];
+
+            const randomMessage = funnyMessages[Math.floor(Math.random() * funnyMessages.length)];
+            alert(randomMessage);
+            return;
+          }
+
+          if (topScore > 0) {
+            const name = window.currentUser || prompt('Digite seu nome para o recorde:');
+            if (name && name.trim() !== '') {
+              addBestScore(name.trim(), topScore);
+            }
+          } else {
+            alert('Faça pontos primeiro!');
+          }
+        });
       };
-      setInterval(game.loop, 1000 / fps);
+      intervalID = setInterval(game.loop, 1000 / fps);
     }
   };
 })();
