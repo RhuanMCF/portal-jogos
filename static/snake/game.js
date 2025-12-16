@@ -274,7 +274,7 @@ var Snake = (function () {
   // teclado
   document.addEventListener('keydown', function (e) {
     // Só previne default para teclas que o jogo usa
-    var gameKeys = [37, 38, 39, 40, 32, 27]; // ← ↑ → ↓ SPACE ESC
+    var gameKeys = [37, 38, 39, 40, 32, 27, 87, 65, 83, 68]; // ← ↑ → ↓ SPACE ESC W A S D
 
     if (gameKeys.includes(e.keyCode)) {
       switch (e.keyCode) {
@@ -284,6 +284,10 @@ var Snake = (function () {
         case 40: game.action.down();  break;
         case 32: velocity = { x: 0, y: 0 }; break; // space
         case 27: game.reset();        break; // esc
+        case 87: game.action.up();    break; // W
+        case 65: game.action.left();  break; // A
+        case 83: game.action.down();  break; // S
+        case 68: game.action.right(); break; // D
       }
       e.preventDefault();
     }
