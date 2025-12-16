@@ -2,7 +2,7 @@ var Bomberman = (function () {
   const COLS = 15, ROWS = 15, TILE = 40; // 600/15=40px pixels maiores pra Bomberman
   var canv, ctx;
   var map = []; // 0 empty, 1 hard wall, 2 soft brick
-  var player = { col: 1, row: 2, dir: 1, bombsMax: 1, flameLen: 1, speed: 0.15, invul: 0, bombCount: 0 };
+  var player = { col: 1, row: 2, dir: 1, bombsMax: 1, flameLen: 1, invul: 0, bombCount: 0 };
   var enemies = [];
   var bombs = [];
   var flames = [];
@@ -22,6 +22,18 @@ var Bomberman = (function () {
         else map[r][c] = 0;
       }
     }
+    // Garantir espaço livre ao redor da posição inicial do jogador
+    for (let dr = -1; dr <= 1; dr++) {
+      for (let dc = -1; dc <= 1; dc++) {
+        const r = 2 + dr, c = 1 + dc;
+        if (r >= 0 && r < ROWS && c >= 0 && c < COLS) {
+          map[r][c] = 0;
+        }
+      }
+    }
+    // Garantir espaço livre para os inimigos
+    map[2][13] = 0; // inimigo 1
+    map[13][2] = 0; // inimigo 2
     player.col = 1; player.row = 2;
   }
 
@@ -84,7 +96,7 @@ var Bomberman = (function () {
 
   function reset() {
     initMap();
-    player = { col: 1, row: 2, dir: 1, bombsMax: 1, flameLen: 1, speed: 0.15, invul: 0, bombCount: 0 };
+    player = { col: 1, row: 2, dir: 1, bombsMax: 1, flameLen: 1, invul: 0, bombCount: 0 };
     enemies = [{col:13, row:2}, {col:2, row:13}];
     bombs = []; flames = []; powerups = [];
     score = 0; lives = 3; level = 1; enemiesLeft = enemies.length;
@@ -177,31 +189,45 @@ var Bomberman = (function () {
 
   function updatePlayer() {
     let dc = 0, dr = 0;
-    if (keys['ArrowUp'] || keys['w'] || keys['W']) { dr = -player.speed; player.dir = 0; console.log('Movendo para cima'); }
-    if (keys['ArrowRight'] || keys['d'] || keys['D']) { dc = player.speed; player.dir = 1; console.log('Movendo para direita'); }
-    if (keys['ArrowDown'] || keys['s'] || keys['S']) { dr = player.speed; player.dir = 2; console.log('Movendo para baixo'); }
-    if (keys['ArrowLeft'] || keys['a'] || keys['A']) { dc = -player.speed; player.dir = 3; console.log('Movendo para esquerda'); }
+    if (keys['ArrowUp'] || keys['w'] || keys['W']) { dr = -1; player.dir = 0; }
+    if (keys['ArrowRight'] || keys['d'] || keys['D']) { dc = 1; player.dir = 1; }
+    if (keys['ArrowDown'] || keys['s'] || keys['S']) { dr = 1; player.dir = 2; }
+    if (keys['ArrowLeft'] || keys['a'] || keys['A']) { dc = -1; player.dir = 3; }
     if (canMove(player.col, player.row, dc, dr)) {
       player.col += dc; player.row += dr;
-      console.log('Player moveu para:', player.col, player.row);
-    } else {
-      console.log('Movimento bloqueado');
     }
     if (keys[' '] && player.bombCount < player.bombsMax) {
-      console.log('Colocando bomba');
       dropBomb();
       keys[' '] = false;
     }
+    // Limpar keys de movimento após usar
+    keys['ArrowUp'] = keys['w'] = keys['W'] = false;
+    keys['ArrowRight'] = keys['d'] = keys['D'] = false;
+    keys['ArrowDown'] = keys['s'] = keys['S'] = false;
+    keys['ArrowLeft'] = keys['a'] = keys['A'] = false;
+    // Check collision with enemies
+    enemies.forEach(e => {
+      if (Math.hypot(e.col - player.col, e.row - player.row) < 0.8 && player.invul <= 0) {
+        lives--;
+        player.invul = 180;
+        updateHUD();
+        if (lives <= 0) gameOver();
+      }
+    });
     player.invul = Math.max(0, player.invul - 1);
   }
 
   function updateEnemies() {
     enemies.forEach(e => {
-      // Simple AI: move towards player
-      const dc = player.col > e.col ? 0.05 : player.col < e.col ? -0.05 : 0;
-      const dr = player.row > e.row ? 0.05 : player.row < e.row ? -0.05 : 0;
-      if (canMove(e.col, e.row, dc, dr)) {
-        e.col += dc; e.row += dr;
+      // Simple AI: move towards player, cell by cell
+      if (Math.random() < 0.02) { // Move occasionally, not every frame
+        const dc = player.col > e.col ? 1 : player.col < e.col ? -1 : 0;
+        const dr = player.row > e.row ? 1 : player.row < e.row ? -1 : 0;
+        if (dc !== 0 && canMove(e.col, e.row, dc, 0)) {
+          e.col += dc;
+        } else if (dr !== 0 && canMove(e.col, e.row, 0, dr)) {
+          e.row += dr;
+        }
       }
     });
   }
