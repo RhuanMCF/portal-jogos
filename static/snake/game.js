@@ -236,7 +236,17 @@ var Snake = (function () {
       for (let i = 0; i < trail.length - 1; i++) {
         if (trail[i]) {
           ctx.fillRect(trail[i].x * gridSize + 1, trail[i].y * gridSize + 1, gridSize - 2, gridSize - 2);
-          if (trail[i].x === player.x && trail[i].y === player.y) game.reset();
+          if (trail[i].x === player.x && trail[i].y === player.y) {
+            // Game over: verifica se é novo recorde e salva automaticamente
+            const userRecords = bestScores.filter(record => record.name === window.currentUser);
+            const userBestScore = userRecords.length > 0 ? Math.max(...userRecords.map(r => r.score)) : 0;
+            if (pointsMax > userBestScore || userBestScore === 0) {
+              if (window.currentUser && pointsMax > 0) {
+                addBestScore(window.currentUser, pointsMax);
+              }
+            }
+            game.reset();
+          }
         }
       }
       ctx.fillStyle = 'lime';
@@ -284,8 +294,8 @@ var Snake = (function () {
     start: function (fps = 15) {
       window.onload = async function() {
         await setup();
-        // Adiciona event listener para o botão salvar
-        document.getElementById('save-score').addEventListener('click', function() {
+        // Removed save button event listener
+        // removed
           // Pega o valor do TOP (recorde pessoal da sessão)
           const topText = document.getElementById('top').textContent;
           const topScore = parseInt(topText.replace('TOP: ', '')) || 0;
