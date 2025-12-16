@@ -103,6 +103,12 @@ def snake():
     usuario = session.get('usuario')
     return render_template('snake/index.html', usuario=usuario, supabase_url=SUPABASE_URL, supabase_key=SUPABASE_KEY)
 
+# Rota para o Bomberman
+@app.route('/bomberman/')
+def bomberman():
+    usuario = session.get('usuario')
+    return render_template('bomberman/index.html', usuario=usuario)
+
 # Sistema de Login do Novo Projeto
 @app.route('/login', methods=['GET', 'POST'])
 def login():

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>💣 BOMBERMAN - Portal de Jogos</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='bomberman/style.css') }}">
+</head>
+<body>
+  <div class="header">
+    {% if usuario %}
+    <div class="user-info">👤 {{ usuario }}</div>
+    {% endif %}
+    <a href="/" class="back-btn">← VOLTAR AO PORTAL</a>
+  </div>
+
+  <h1>💣 BOMBERMAN - PIXEL PURO!</h1>
+  <p>Setas/WASD mover | ESPAÇO bomba | ESC reset</p>
+  <div id="hud">
+    <span id="score">SCORE: 0</span>
+    <span id="lives">VIDAS: 3</span>
+    <span id="level">LVL: 1</span>
+    <span id="enemies">INIM: 1</span>
+    <div id="powers">🔥1 💣1</div>
+  </div>
+  <canvas id="gc" width="600" height="600"></canvas>
+  <button id="reset">🔄 RESET</button>
+  <div id="game-over" style="display:none;"></div>
+  <div class="leaderboard">
+    <h3>🏆 TOP 5 RECORDES</h3>
+    <div id="scores">
+      <span class="best-score">1. --- : 0</span>
+      <span class="best-score">2. --- : 0</span>
+      <span class="best-score">3. --- : 0</span>
+      <span class="best-score">4. --- : 0</span>
+      <span class="best-score">5. --- : 0</span>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='bomberman/game.js') }}"></script>
+  <script>
+    // Define o usuário atual para o jogo
+    {% if usuario %}
+    window.currentUser = "{{ usuario }}";
+    {% else %}
+    window.currentUser = null;
+    {% endif %}
+  </script>
+</body>
+</html>
