@@ -177,14 +177,18 @@ var Bomberman = (function () {
 
   function updatePlayer() {
     let dc = 0, dr = 0;
-    if (keys['ArrowUp'] || keys['w'] || keys['W']) { dr = -player.speed; player.dir = 0; }
-    if (keys['ArrowRight'] || keys['d'] || keys['D']) { dc = player.speed; player.dir = 1; }
-    if (keys['ArrowDown'] || keys['s'] || keys['S']) { dr = player.speed; player.dir = 2; }
-    if (keys['ArrowLeft'] || keys['a'] || keys['A']) { dc = -player.speed; player.dir = 3; }
+    if (keys['ArrowUp'] || keys['w'] || keys['W']) { dr = -player.speed; player.dir = 0; console.log('Movendo para cima'); }
+    if (keys['ArrowRight'] || keys['d'] || keys['D']) { dc = player.speed; player.dir = 1; console.log('Movendo para direita'); }
+    if (keys['ArrowDown'] || keys['s'] || keys['S']) { dr = player.speed; player.dir = 2; console.log('Movendo para baixo'); }
+    if (keys['ArrowLeft'] || keys['a'] || keys['A']) { dc = -player.speed; player.dir = 3; console.log('Movendo para esquerda'); }
     if (canMove(player.col, player.row, dc, dr)) {
       player.col += dc; player.row += dr;
+      console.log('Player moveu para:', player.col, player.row);
+    } else {
+      console.log('Movimento bloqueado');
     }
     if (keys[' '] && player.bombCount < player.bombsMax) {
+      console.log('Colocando bomba');
       dropBomb();
       keys[' '] = false;
     }
@@ -318,13 +322,14 @@ var Bomberman = (function () {
   }
 
   function loop() {
+    console.log('Loop executando');
     update();
     draw();
-    requestAnimationFrame(loop);
   }
 
   // Events
   document.addEventListener('keydown', e => {
+    console.log('Tecla pressionada:', e.key);
     keys[e.key] = true;
     if (e.key === ' ') { e.preventDefault(); keys[' '] = true; }
     if (e.key === 'Escape') reset();
