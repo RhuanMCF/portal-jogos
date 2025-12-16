@@ -1,7 +1,6 @@
 var Snake = (function () {
   const INITIAL_TAIL = 4;
   var fixedTail = false;
-  var intervalID;
 
   var tileCount = 15;
   var gridSize = 600 / tileCount;
@@ -75,7 +74,6 @@ var Snake = (function () {
         throw new Error('Falha ao carregar do servidor');
       }
     } catch (e) {
-      console.log('Erro ao carregar do servidor, usando localStorage:', e);
       // Fallback para localStorage
       try {
         const saved = localStorage.getItem('snakeBestScores');
@@ -93,7 +91,6 @@ var Snake = (function () {
           ];
         }
       } catch (localError) {
-        console.log('localStorage não disponível, usando valores padrão');
         bestScores = [
           { name: '---', score: 0 },
           { name: '---', score: 0 },
@@ -111,7 +108,7 @@ var Snake = (function () {
     try {
       localStorage.setItem('snakeBestScores', JSON.stringify(bestScores));
     } catch (e) {
-      console.log('Não foi possível salvar no localStorage');
+      // Silenciosamente ignora erro de localStorage
     }
   }
 
@@ -119,7 +116,7 @@ var Snake = (function () {
   function updateBestScoresDisplay() {
     const scoreElements = document.querySelectorAll('.best-score');
     bestScores.forEach((score, index) => {
-      scoreElements[index].textContent = `${index + 1}. ${score.nome || score.name} : ${score.pontuacao || score.score}`;
+      scoreElements[index].textContent = `${index + 1}. ${score.name} : ${score.score}`;
     });
   }
 
@@ -128,18 +125,14 @@ var Snake = (function () {
     // Salva no servidor
     const success = await saveBestScore(name, score);
     if (success) {
-      alert('Recorde salvo com sucesso!');
       // Recarrega os scores após salvar
       await loadBestScores();
-    } else {
-      alert('Erro ao salvar recorde. Verifique o console para detalhes.');
     }
   }
 
   // Salva o recorde no servidor via API
   async function saveBestScore(name, score) {
     try {
-      console.log('Tentando salvar score:', { username: name, score: score });
       const response = await fetch('/api/recordes', {
         method: 'POST',
         headers: {
@@ -150,18 +143,12 @@ var Snake = (function () {
           score: score
         })
       });
-      console.log('Resposta do servidor:', response.status, response.statusText);
       if (response.ok) {
-        const data = await response.json();
-        console.log('Dados da resposta:', data);
         return true;
       } else {
-        const errorData = await response.json().catch(() => ({}));
-        console.error('Erro na resposta:', errorData);
         return false;
       }
     } catch (error) {
-      console.error('Erro ao salvar recorde:', error);
       return false;
     }
   }
@@ -300,7 +287,7 @@ var Snake = (function () {
         await setup();
 
       };
-      intervalID = setInterval(game.loop, 1000 / fps);
+      setInterval(game.loop, 1000 / fps);
     }
   };
 })();
