@@ -86,9 +86,8 @@ var BreakoutGame;
   }
 
   function updateHUD() {
-    document.getElementById('score').textContent = `SCORE: ${score}`;
-    document.getElementById('lives').textContent = `VIDAS: ${lives}`;
-    document.getElementById('level').textContent = `LVL: ${level}`;
+    document.getElementById('points').textContent = `POINTS: ${score}`;
+    document.getElementById('top').textContent = `LVL: ${level}`;
   }
 
   function update() {

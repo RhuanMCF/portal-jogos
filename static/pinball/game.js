@@ -71,9 +71,8 @@ var PinballGame;
   }
 
   function updateHUD() {
-    document.getElementById('score').textContent = `SCORE: ${score}`;
-    document.getElementById('balls').textContent = `BOLAS: ${balls}`;
-    document.getElementById('multiplier').textContent = `MULT: ${multiplier}x`;
+    document.getElementById('points').textContent = `POINTS: ${score}`;
+    document.getElementById('top').textContent = `BALLS: ${balls}`;
   }
 
   function initBumpers() {

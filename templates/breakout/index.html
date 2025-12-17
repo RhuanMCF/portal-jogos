@@ -12,9 +12,8 @@
     {% if usuario %}
     <div class="user-info">👤 {{ usuario }}</div>
     {% endif %}
-    <div id="score">SCORE: 0</div>
-    <div id="lives">VIDAS: 3</div>
-    <div id="level">LVL: 1</div>
+    <div id="points">POINTS: 0</div>
+    <div id="top">TOP: 0</div>
     <div class="controls">
       ← → mover raquete
     </div>
@@ -27,7 +26,7 @@
 
   <div class="best-panel">
     <div class="best-title">BEST</div>
-    <div id="scores">
+    <div id="best-scores">
       <div class="best-score">1. --- : 0</div>
       <div class="best-score">2. --- : 0</div>
       <div class="best-score">3. --- : 0</div>
@@ -45,6 +44,10 @@
     {% else %}
     window.currentUser = null;
     {% endif %}
+
+    window.onload = function() {
+      BreakoutGame.init();
+    };
   </script>
 </body>
 </html>

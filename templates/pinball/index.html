@@ -12,9 +12,8 @@
     {% if usuario %}
     <div class="user-info">👤 {{ usuario }}</div>
     {% endif %}
-    <div id="score">SCORE: 0</div>
-    <div id="balls">BOLAS: 3</div>
-    <div id="multiplier">MULT: 1x</div>
+    <div id="points">POINTS: 0</div>
+    <div id="top">TOP: 0</div>
     <div class="controls">
       Z / ativar flippers<br>
       ESPAÇO lançar bola
@@ -28,7 +27,7 @@
 
   <div class="best-panel">
     <div class="best-title">BEST</div>
-    <div id="scores">
+    <div id="best-scores">
       <div class="best-score">1. --- : 0</div>
       <div class="best-score">2. --- : 0</div>
       <div class="best-score">3. --- : 0</div>
@@ -46,6 +45,10 @@
     {% else %}
     window.currentUser = null;
     {% endif %}
+
+    window.onload = function() {
+      PinballGame.init();
+    };
   </script>
 </body>
 </html>
