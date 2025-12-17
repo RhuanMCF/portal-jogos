@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🐸 Frogger - Portal de Jogos</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='frogger/style.css') }}">
+</head>
+<body>
+  <h1>🐸 FROGGER - Portal de Jogos</h1>
+  <div id="hud">
+    <span id="score">SCORE: 0</span>
+    <span id="lives">VIDAS: 3</span>
+    <span id="level">LVL: 1</span>
+    <button id="reset">🔄 RESET</button>
+  </div>
+  <canvas id="gc" width="600" height="600"></canvas>
+  <div id="game-over" style="display:none;"></div>
+  <div class="leaderboard">
+    <h3>🏆 TOP 5 RECORDES</h3>
+    <div id="scores">
+      <span class="best-score">1. --- : 0</span>
+      <span class="best-score">2. --- : 0</span>
+      <span class="best-score">3. --- : 0</span>
+      <span class="best-score">4. --- : 0</span>
+      <span class="best-score">5. --- : 0</span>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='frogger/game.js') }}"></script>
+  <script>
+    // Define o usuário atual para o jogo
+    {% if usuario %}
+    window.currentUser = "{{ usuario }}";
+    {% else %}
+    window.currentUser = null;
+    {% endif %}
+
+    window.onload = function() {
+      FroggerGame.init();
+    };
+  </script>
+</body>
+</html>

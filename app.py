@@ -46,7 +46,12 @@ def get_recordes():
             'snake': 'snake_scores',
             'bomberman': 'bomberman_scores',
             'breakout': 'breakout_scores',
-            'pinball': 'pinball_scores'
+            'pinball': 'pinball_scores',
+            'frogger': 'frogger_scores',
+            'invaders': 'invaders_scores',
+            'racing': 'racing_scores',
+            'tank': 'tank_scores',
+            'tetris': 'tetris_scores'
         }
         table_name = table_map.get(game, 'snake_scores')  # Fallback para snake
         
@@ -93,7 +98,12 @@ def save_recorde():
             'snake': 'snake_scores',
             'bomberman': 'bomberman_scores',
             'breakout': 'breakout_scores',
-            'pinball': 'pinball_scores'
+            'pinball': 'pinball_scores',
+            'frogger': 'frogger_scores',
+            'invaders': 'invaders_scores',
+            'racing': 'racing_scores',
+            'tank': 'tank_scores',
+            'tetris': 'tetris_scores'
         }
         table_name = table_map.get(game, 'snake_scores')
 
@@ -151,6 +161,36 @@ def breakout():
 def pinball():
     usuario = session.get('usuario')
     return render_template('pinball/index.html', usuario=usuario)
+
+# Rota para o Frogger
+@app.route('/frogger/')
+def frogger():
+    usuario = session.get('usuario')
+    return render_template('frogger/index.html', usuario=usuario)
+
+# Rota para o Invaders
+@app.route('/invaders/')
+def invaders():
+    usuario = session.get('usuario')
+    return render_template('invaders/index.html', usuario=usuario)
+
+# Rota para o Racing
+@app.route('/racing/')
+def racing():
+    usuario = session.get('usuario')
+    return render_template('racing/index.html', usuario=usuario)
+
+# Rota para o Tank
+@app.route('/tank/')
+def tank():
+    usuario = session.get('usuario')
+    return render_template('tank/index.html', usuario=usuario)
+
+# Rota para o Tetris
+@app.route('/tetris/')
+def tetris():
+    usuario = session.get('usuario')
+    return render_template('tetris/index.html', usuario=usuario)
 
 # Sistema de Login do Novo Projeto
 @app.route('/login', methods=['GET', 'POST'])

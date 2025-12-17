@@ -1,0 +1,323 @@
+var TankGame;
+
+(function () {
+  const COLS = 30, ROWS = 30, TILE = 600 / COLS;
+  var canv, ctx;
+  var map = []; // 0 empty, 1 brick, 2 steel, 3 base
+  var player = { col: 14, row: 27, dir: 0, invincible: 0, shootTimer: 0 };
+  var enemies = [];
+  var playerBullets = [];
+  var enemyBullets = [];
+  var score = 0, lives = 3, wave = 1, enemiesKilled = 0, gameRunning = true;
+  var keys = {};
+  var bestScores = [];
+
+  const DIRS = [[0,-1], [1,0], [0,1], [-1,0]]; // up right down left
+
+  function initMap() {
+    // Clear
+    for (let r=0; r<ROWS; r++) {
+      map[r] = [];
+      for (let c=0; c<COLS; c++) map[r][c] = 0;
+    }
+    // Borders steel
+    for (let c=0; c<COLS; c++) {
+      map[0][c] = 2; map[ROWS-1][c] = 2; map[29][c] = 2; // bottom almost
+    }
+    for (let r=1; r<ROWS-3; r++) {
+      map[r][0] = 2; map[r][COLS-1] = 2;
+    }
+    // Bricks
+    for (let r=2; r<10; r+=2) for (let c=2; c<COLS-2; c+=3) map[r][c] = 1;
+    // Base eagle center bottom
+    const bc = Math.floor(COLS/2)-1, br = ROWS-3;
+    map[br][bc] = 3; map[br][bc+1] = 3; map[br][bc+2] = 3;
+  }
+
+  async function loadBestScores() {
+    if (window.currentUser) {
+      try {
+        const response = await fetch('/api/recordes?game=tank');
+        const data = await response.json();
+        bestScores = data.scores.map(s => ({name: s.username, score: s.score}));
+      } catch (e) {
+        console.error('Erro ao carregar recordes:', e);
+        bestScores = Array(5).fill({name:'---',score:0});
+      }
+    } else {
+      try {
+        const saved = localStorage.getItem('tankBestScores');
+        bestScores = saved ? JSON.parse(saved) : Array(5).fill({name:'---',score:0});
+      } catch { bestScores = Array(5).fill({name:'---',score:0}); }
+    }
+    updateScoresDisplay();
+  }
+
+  function saveBestScores() {
+    if (!window.currentUser) {
+      try { localStorage.setItem('tankBestScores', JSON.stringify(bestScores)); } catch(e) {}
+    }
+  }
+
+  function updateScoresDisplay() {
+    document.querySelectorAll('.best-score').forEach((el,i) => {
+      el.textContent = `${i+1}. ${bestScores[i]?.name || '---'} : ${bestScores[i]?.score || 0}`;
+    });
+  }
+
+  function addScore(name, sc) {
+    bestScores.push({name, score:sc});
+    bestScores.sort((a,b)=>b.score - a.score).splice(5);
+    saveBestScores();
+    updateScoresDisplay();
+  }
+
+  function reset() {
+    initMap();
+    player = { col: 14, row: 27, dir: 0, invincible: 0, shootTimer: 0 };
+    enemies = []; playerBullets = []; enemyBullets = [];
+    score = 0; lives = 3; wave = 1; enemiesKilled = 0; gameRunning = true;
+    updateHUD();
+    document.getElementById('game-over').style.display = 'none';
+  }
+
+  function updateHUD() {
+    document.getElementById('score').textContent = `SCORE: ${score}`;
+    document.getElementById('lives').textContent = `VIDAS: ${lives}`;
+    document.getElementById('wave').textContent = `ONDA: ${wave}`;
+    document.getElementById('enemies').textContent = `INIM: ${enemies.length}`;
+  }
+
+  function canMove(c, r, dc, dr) {
+    const nc = Math.floor(c + dc), nr = Math.floor(r + dr);
+    if (nc<1 || nc>=COLS-1 || nr<1 || nr>=ROWS-2) return false;
+    return map[nr][nc] === 0;
+  }
+
+  function shoot(fromPlayer) {
+    const buls = fromPlayer ? playerBullets : enemyBullets;
+    if (buls.length > 0) return; // 1 bala por vez
+    const dc = DIRS[player.dir][0] * 0.3, dr = DIRS[player.dir][1] * 0.3; // half tile speed
+    buls.push({ col: player.col + 0.5, row: player.row + 0.5, dc, dr });
+  }
+
+  function updateBullets(buls, isPlayer) {
+    for (let i=buls.length-1; i>=0; i--) {
+      const b = buls[i];
+      b.col += b.dc; b.row += b.dr;
+      const tc = Math.floor(b.col), tr = Math.floor(b.row);
+      if (tc<0 || tc>=COLS || tr<0 || tr>=ROWS || map[tr][tc] === 2) {
+        buls.splice(i,1); continue;
+      }
+      if (map[tr][tc] === 1) { map[tr][tc] = 0; buls.splice(i,1); continue; }
+      if (map[tr][tc] === 3) { gameOver(); return; }
+      // Hit tank?
+      if (isPlayer) {
+        for (let j=enemies.length-1; j>=0; j--) {
+          const e = enemies[j];
+          if (Math.abs(e.col - tc)<0.8 && Math.abs(e.row - tr)<0.8) {
+            enemies.splice(j,1); score += 100; enemiesKilled++; buls.splice(i,1);
+            checkWave(); return;
+          }
+        }
+      } else {
+        if (Math.abs(player.col - tc)<0.8 && Math.abs(player.row - tr)<0.8 && player.invincible <=0) {
+          lives--; player.invincible = 150; // 3s @50fps
+          buls.splice(i,1); updateHUD();
+          if (lives <=0) gameOver();
+          return;
+        }
+      }
+    }
+  }
+
+  function updateEnemies() {
+    if (enemies.length < 4 && Math.random() < 0.01) {
+      enemies.push({ col: Math.floor(Math.random()* (COLS-4)) +2, row: 1, dir: Math.floor(Math.random()*4) });
+    }
+    for (let i=enemies.length-1; i>=0; i--) {
+      const e = enemies[i];
+      // AI simple
+      if (Math.random() < 0.05) e.dir = Math.floor(Math.random()*4); // random dir
+      if (Math.random() < 0.03) shoot(false); // shoot
+      const dc = DIRS[e.dir][0]*0.15, dr = DIRS[e.dir][1]*0.15;
+      if (canMove(e.col, e.row, dc, dr)) {
+        e.col += dc; e.row += dr;
+      } else {
+        e.dir = (e.dir + 1 + Math.floor(Math.random()*2)) % 4; // turn
+      }
+    }
+  }
+
+  function checkWave() {
+    if (enemiesKilled % 20 === 0) {
+      wave++;
+      // faster? increase spawn rate etc.
+    }
+  }
+
+  function updatePlayer() {
+    // Move/Dir
+    let moved = false;
+    if (keys['ArrowUp'] || keys['w'] || keys['W'] || keys['KeyW']) { player.dir = 0; moved = true; }
+    if (keys['ArrowRight'] || keys['d'] || keys['D'] || keys['KeyD']) { player.dir = 1; moved = true; }
+    if (keys['ArrowDown'] || keys['s'] || keys['S'] || keys['KeyS']) { player.dir = 2; moved = true; }
+    if (keys['ArrowLeft'] || keys['a'] || keys['A'] || keys['KeyA']) { player.dir = 3; moved = true; }
+    if (moved) {
+      const dc = DIRS[player.dir][0]*0.2, dr = DIRS[player.dir][1]*0.2;
+      if (canMove(player.col, player.row, dc, dr)) {
+        player.col += dc; player.row += dr;
+      }
+    }
+    // Shoot
+    if ((keys[' '] || keys['Space']) && player.shootTimer <=0) {
+      shoot(true); player.shootTimer = 30;
+    }
+    if (player.shootTimer >0) player.shootTimer--;
+    player.invincible = Math.max(0, player.invincible -1);
+  }
+
+  function gameOver() {
+    gameRunning = false;
+    if (loop.animationId) {
+      cancelAnimationFrame(loop.animationId);
+    }
+    const goEl = document.getElementById('game-over');
+    goEl.innerHTML = `GAME OVER! Score: ${score} | <button onclick="TankGame.saveHigh()">💾 Salvar Record</button>`;
+    goEl.style.display = 'block';
+  }
+
+  function drawMap() {
+    for (let r=0; r<ROWS; r++) for (let c=0; c<COLS; c++) {
+      const px = c * TILE, py = r * TILE;
+      if (map[r][c] === 1) { // brick
+        ctx.fillStyle = '#8B4513';
+        ctx.fillRect(px+1, py+1, TILE-2, TILE-2);
+        ctx.fillStyle = '#654321';
+        ctx.fillRect(px+TILE/4, py+TILE/4, TILE/2, TILE/2);
+      } else if (map[r][c] === 2) { // steel
+        ctx.fillStyle = '#AAA';
+        ctx.fillRect(px+1, py+1, TILE-2, TILE-2);
+        ctx.strokeStyle = '#777';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(px+2, py+2, TILE-4, TILE-4);
+      } else if (map[r][c] === 3) { // base
+        ctx.fillStyle = '#FFD700';
+        ctx.fillRect(px+2, py+2, TILE-4, TILE-4);
+        ctx.fillStyle = '#FF4500';
+        ctx.fillRect(px+TILE/3, py, TILE/3, TILE/3); // wing
+      }
+    }
+  }
+
+  function drawTank(c, r, dir, color, flash=false) {
+    const px = Math.floor(c * TILE), py = Math.floor(r * TILE);
+    if (flash && Math.floor(Math.random()*10)<5) return;
+    ctx.fillStyle = color;
+    ctx.fillRect(px, py, TILE, TILE); // body GIGANTE - ocupa todo o tile
+    ctx.fillStyle = '#333';
+    let bx1=px+TILE/3, by1=py+TILE/3, bw=TILE/3, bh=TILE/3;
+    if (dir === 0) { by1 = py; bh = TILE/2; } // up
+    else if (dir === 1) { bx1 = px + TILE/2; bw = TILE/2; bh = TILE/3; } // right
+    else if (dir === 2) { by1 = py + TILE/2; bh = TILE/2; } // down
+    else if (dir === 3) { bx1 = px; bw = TILE/2; bh = TILE/3; } // left
+    ctx.fillRect(bx1+1, by1+1, bw-2, bh-2); // cannon
+  }
+
+  function drawBullets(buls, color) {
+    buls.forEach(b => {
+      const px = Math.floor(b.col * TILE), py = Math.floor(b.row * TILE);
+      ctx.fillStyle = color;
+      ctx.fillRect(px+ TILE/4, py+ TILE/4, TILE/2, TILE/2);
+    });
+  }
+
+  function draw() {
+    ctx.fillStyle = '#222';
+    ctx.fillRect(0,0,600,600);
+    drawMap();
+    drawBullets(playerBullets, 'white');
+    drawBullets(enemyBullets, 'yellow');
+    drawTank(player.col, player.row, player.dir, player.invincible>0 ? 'gold' : '#ff0000');
+    enemies.forEach((e,i) => drawTank(e.col, e.row, e.dir, ['#FF0000','#FF8800','#FF4400'][i%3]));
+  }
+
+  function loop() {
+    if (!gameRunning) return;
+
+    const now = performance.now();
+    if (!loop.lastTime) loop.lastTime = now;
+    const deltaTime = now - loop.lastTime;
+
+    // Controle de FPS - 30 FPS máximo para jogo mais lento
+    if (deltaTime >= 1000/30) {
+      updatePlayer();
+      updateEnemies();
+      updateBullets(playerBullets, true);
+      updateBullets(enemyBullets, false);
+      draw();
+      updateHUD();
+      loop.lastTime = now;
+    }
+
+    loop.animationId = requestAnimationFrame(loop);
+  }
+
+  // Events
+  document.addEventListener('keydown', function(e) {
+    keys[e.code] = true;
+    keys[e.key] = true;
+    keys[e.code.replace('Key','').toLowerCase()] = true;
+    if (e.code === 'Space') e.preventDefault();
+  });
+  document.addEventListener('keyup', function(e) {
+    keys[e.code] = false;
+    keys[e.key] = false;
+    keys[e.code.replace('Key','').toLowerCase()] = false;
+  });
+
+  window.TankGame = {
+    init: function() {
+      canv = document.getElementById('gc');
+      ctx = canv.getContext('2d');
+      loadBestScores();
+      reset();
+      loop();
+      document.getElementById('reset').onclick = reset;
+    },
+    saveHigh: async function() {
+      if (window.currentUser) {
+        try {
+          const response = await fetch('/api/recordes', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({username: window.currentUser, score: score, game: 'tank'})
+          });
+          if (response.ok) {
+            alert('Recorde salvo! 🏆');
+            loadBestScores();
+          } else {
+            alert('Erro ao salvar recorde.');
+          }
+        } catch (e) {
+          alert('Erro ao salvar recorde.');
+        }
+      } else {
+        const name = prompt('Nome pro recorde:');
+        if (name && name.trim()) {
+          const cleanName = name.trim();
+          const userBest = bestScores.filter(r => r.name === cleanName).reduce((max, r) => Math.max(max, r.score), 0);
+          if (score <= userBest && userBest > 0) {
+            const funny = ["🚫 Seu tanque tá enferrujado! Tenta de novo! 🦀", "😅 Inimigos riem do seu score! 💪", "💥 Boom! Seu recorde explodiu! 🔄"];
+            alert(funny[Math.floor(Math.random()*funny.length)]);
+            return;
+          }
+          addScore(cleanName, score);
+          alert('Recorde salvo! 🏆');
+        }
+      }
+    }
+  };
+
+  TankGame = window.TankGame;
+})();
