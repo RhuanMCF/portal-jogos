@@ -22,6 +22,7 @@ var Snake = (function () {
   var nextAction = ActionEnum.none; // Ação pendente para o próximo frame
 
   var bestScores = [];
+  var userBestScore = 0;
 
   // Limpa duplicatas mantendo apenas o melhor recorde de cada usuário
   function cleanDuplicateScores() {
@@ -61,12 +62,13 @@ var Snake = (function () {
       // Tenta carregar do servidor primeiro
       const response = await fetch('/api/recordes?game=snake');
       if (response.ok) {
-        const serverScores = await response.json();
+        const data = await response.json();
         // Converte formato do servidor para o formato local
-        bestScores = serverScores.map(record => ({
+        bestScores = data.scores.map(record => ({
           name: record.username,
           score: record.score
         }));
+        userBestScore = data.userScore || 0;
         // Completa com placeholders se necessário
         while (bestScores.length < 5) {
           bestScores.push({ name: '---', score: 0 });
@@ -100,6 +102,7 @@ var Snake = (function () {
           { name: '---', score: 0 }
         ];
       }
+      userBestScore = 0;
     }
     updateBestScoresDisplay();
   }
@@ -123,9 +126,11 @@ var Snake = (function () {
 
   // Adiciona um novo recorde
   async function addBestScore(name, score) {
+    if (score <= userBestScore) return;
     // Salva no servidor
     const success = await saveBestScoreToAPI(name, score);
     if (success) {
+      userBestScore = score;
       // Recarrega os scores após salvar
       await loadBestScores();
     }

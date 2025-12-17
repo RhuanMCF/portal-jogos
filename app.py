@@ -40,11 +40,19 @@ def get_recordes():
     """Retorna os top 5 recordes globais"""
     try:
         game = request.args.get('game', 'snake')  # Default para snake se não especificado
+        usuario = session.get('usuario')
 
         if supabase:
             # Buscar os top 5 recordes para o jogo específico
             response = supabase.table('high_scores').select('username, score').eq('game', game).order('score', desc=True).limit(5).execute()
             recordes = [{'username': r['username'], 'score': r['score']} for r in response.data]
+            
+            # Buscar o score do usuário logado
+            user_score = 0
+            if usuario:
+                user_response = supabase.table('high_scores').select('score').eq('username', usuario).eq('game', game).execute()
+                if user_response.data:
+                    user_score = user_response.data[0]['score']
         else:
             # Fallback para dados locais (se Supabase não configurado)
             recordes = [
@@ -54,11 +62,12 @@ def get_recordes():
                 {'username': '---', 'score': 0},
                 {'username': '---', 'score': 0}
             ]
+            user_score = 0
 
-        return jsonify(recordes)
+        return jsonify({'scores': recordes, 'userScore': user_score})
     except Exception as e:
         print(f"Erro ao buscar recordes: {e}")
-        return jsonify([]), 500
+        return jsonify({'scores': [], 'userScore': 0}), 500
 
 @app.route('/api/recordes', methods=['POST'])
 def save_recorde():

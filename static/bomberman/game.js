@@ -11,6 +11,7 @@ var Bomberman = (function () {
   var gameRunning = true;
   var keys = {};
   var bestScores = [];
+  var userBestScore = 0;
 
   function initMap() {
     for (let r = 0; r < ROWS; r++) {
@@ -44,11 +45,12 @@ var Bomberman = (function () {
     try {
       const response = await fetch('/api/recordes?game=bomberman');
       if (response.ok) {
-        const serverScores = await response.json();
-        bestScores = serverScores.map(record => ({
+        const data = await response.json();
+        bestScores = data.scores.map(record => ({
           name: record.username,
           score: record.score
         }));
+        userBestScore = data.userScore || 0;
         while (bestScores.length < 5) {
           bestScores.push({ name: '---', score: 0 });
         }
@@ -63,6 +65,7 @@ var Bomberman = (function () {
         { name: '---', score: 0 },
         { name: '---', score: 0 }
       ];
+      userBestScore = 0;
     }
     updateScoresDisplay();
   }
@@ -75,9 +78,10 @@ var Bomberman = (function () {
 
   // Adiciona um novo recorde via API
   async function addScore(name, sc) {
-    if (!name || !window.currentUser) return;
+    if (!name || !window.currentUser || sc <= userBestScore) return;
     const success = await saveBestScore(name, sc);
     if (success) {
+      userBestScore = sc;
       await loadBestScores();
     }
   }
@@ -223,10 +227,6 @@ var Bomberman = (function () {
     // Check victory condition
     if (enemiesLeft <= 0) {
       level++;
-      // Save score if it's a new record
-      if (window.currentUser && score > 0) {
-        addScore(window.currentUser, score);
-      }
       // Auto reset for next level
       setTimeout(() => {
         reset();
