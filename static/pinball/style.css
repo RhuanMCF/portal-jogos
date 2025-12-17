@@ -1,0 +1,103 @@
+body {
+  margin: 0;
+  background: #000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-family: 'Courier New', monospace;
+  color: lime;
+  gap: 20px;
+  padding: 10px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+#game-container {
+  background: rgba(0, 255, 0, 0.1);
+  padding: 30px;
+  border-radius: 20px;
+  box-shadow: 0 0 40px rgba(0,0,0,0.9);
+}
+
+.game-canvas {
+  border: 3px solid lime;
+  background: #111;
+  image-rendering: pixelated;
+  border-radius: 10px;
+}
+
+#game-over {
+  font-size: 1.5em;
+  color: red;
+  margin: 10px 0;
+  text-align: center;
+}
+
+/* Painel esquerdo - textos menores */
+.info-panel {
+  text-align: left;
+  min-width: 180px;
+}
+
+.user-info {
+  font-size: 18px;
+  font-weight: bold;
+  color: lime;
+  margin-bottom: 10px;
+  padding: 8px 12px;
+  background: rgba(0,255,0,0.1);
+  border-radius: 8px;
+  border-left: 3px solid lime;
+}
+
+#score, #balls, #multiplier {
+  font-size: 24px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+  color: lime;
+}
+
+.controls {
+  font-size: 14px;
+  color: #90EE90;
+  margin-top: 10px;
+  line-height: 1.4;
+}
+
+/* Painel direito - melhores recordes */
+.best-panel {
+  text-align: center;
+  min-width: 200px;
+}
+
+.best-title {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 15px;
+  color: lime;
+}
+
+.best-score {
+  font-size: 16px;
+  margin: 8px 0;
+  color: #90EE90;
+}
+
+.exit-btn {
+  background: lime;
+  color: black;
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  border-radius: 5px;
+  margin-top: 20px;
+  transition: background 0.3s;
+}
+
+.exit-btn:hover {
+  background: #32CD32;
+}

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pinball Game</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='pinball/style.css') }}">
+</head>
+<body>
+
+  <div class="info-panel">
+    {% if usuario %}
+    <div class="user-info">👤 {{ usuario }}</div>
+    {% endif %}
+    <div id="score">SCORE: 0</div>
+    <div id="balls">BOLAS: 3</div>
+    <div id="multiplier">MULT: 1x</div>
+    <div class="controls">
+      Z / ativar flippers<br>
+      ESPAÇO lançar bola
+    </div>
+  </div>
+
+  <div id="game-container">
+    <canvas id="gc" class="game-canvas" width="600" height="600"></canvas>
+    <div id="game-over" style="display:none;"></div>
+  </div>
+
+  <div class="best-panel">
+    <div class="best-title">BEST</div>
+    <div id="scores">
+      <div class="best-score">1. --- : 0</div>
+      <div class="best-score">2. --- : 0</div>
+      <div class="best-score">3. --- : 0</div>
+      <div class="best-score">4. --- : 0</div>
+      <div class="best-score">5. --- : 0</div>
+    </div>
+    <button onclick="window.location.href='/'" class="exit-btn">SAIR DO JOGO</button>
+  </div>
+
+  <script src="{{ url_for('static', filename='pinball/game.js') }}"></script>
+  <script>
+    // Define o usuário atual para o jogo
+    {% if usuario %}
+    window.currentUser = "{{ usuario }}";
+    {% else %}
+    window.currentUser = null;
+    {% endif %}
+  </script>
+</body>
+</html>

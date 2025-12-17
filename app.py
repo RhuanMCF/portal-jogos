@@ -122,6 +122,18 @@ def bomberman():
     usuario = session.get('usuario')
     return render_template('bomberman/index.html', usuario=usuario)
 
+# Rota para o Breakout
+@app.route('/breakout/')
+def breakout():
+    usuario = session.get('usuario')
+    return render_template('breakout/index.html', usuario=usuario)
+
+# Rota para o Pinball
+@app.route('/pinball/')
+def pinball():
+    usuario = session.get('usuario')
+    return render_template('pinball/index.html', usuario=usuario)
+
 # Sistema de Login do Novo Projeto
 @app.route('/login', methods=['GET', 'POST'])
 def login():
