@@ -223,10 +223,6 @@ var Bomberman = (function () {
     // Check victory condition
     if (enemiesLeft <= 0) {
       level++;
-      // Save score if it's a new record
-      if (window.currentUser && score > 0) {
-        addScore(window.currentUser, score);
-      }
       // Auto reset for next level
       setTimeout(() => {
         reset();

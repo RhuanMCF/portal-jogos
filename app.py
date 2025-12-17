@@ -40,17 +40,27 @@ def get_recordes():
     """Retorna os top 5 recordes globais"""
     try:
         game = request.args.get('game', 'snake')  # Default para snake se não especificado
+        
+        # Mapear game para tabela específica
+        table_map = {
+            'snake': 'snake_scores',
+            'bomberman': 'bomberman_scores',
+            'breakout': 'breakout_scores',
+            'pinball': 'pinball_scores'
+        }
+        table_name = table_map.get(game, 'snake_scores')  # Fallback para snake
+        
         usuario = session.get('usuario')
 
         if supabase:
             # Buscar os top 5 recordes para o jogo específico
-            response = supabase.table('high_scores').select('username, score').eq('game', game).order('score', desc=True).limit(5).execute()
+            response = supabase.table(table_name).select('username, score').order('score', desc=True).limit(5).execute()
             recordes = [{'username': r['username'], 'score': r['score']} for r in response.data]
             
             # Buscar o score do usuário logado
             user_score = 0
             if usuario:
-                user_response = supabase.table('high_scores').select('score').eq('username', usuario).eq('game', game).execute()
+                user_response = supabase.table(table_name).select('score').eq('username', usuario).order('score', desc=True).limit(1).execute()
                 if user_response.data:
                     user_score = user_response.data[0]['score']
         else:
@@ -78,6 +88,15 @@ def save_recorde():
         score = data.get('score', 0)
         game = data.get('game', 'snake')  # Default para snake
 
+        # Mapear game para tabela específica
+        table_map = {
+            'snake': 'snake_scores',
+            'bomberman': 'bomberman_scores',
+            'breakout': 'breakout_scores',
+            'pinball': 'pinball_scores'
+        }
+        table_name = table_map.get(game, 'snake_scores')
+
         # Validações básicas
         if not username or len(username) > 20:
             return jsonify({'error': 'Nome inválido'}), 400
@@ -87,11 +106,10 @@ def save_recorde():
 
         if supabase:
             # Deletar scores antigos do usuário para este jogo e inserir o novo
-            supabase.table('high_scores').delete().eq('username', username).eq('game', game).execute()
-            response = supabase.table('high_scores').insert({
+            supabase.table(table_name).delete().eq('username', username).execute()
+            response = supabase.table(table_name).insert({
                 'username': username,
-                'score': score,
-                'game': game
+                'score': score
             }).execute()
 
             return jsonify({'success': True, 'message': 'Recorde salvo!'})
