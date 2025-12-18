@@ -1,4 +1,7 @@
-from flask import Flask, render_template, send_from_directory
+from flask import Flask, render_template, send_from_directory, request, redirect, url_for, session, flash, jsonify
+import os
+import json
+from supabase import create_client, Client
 
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', 'segredo123')
@@ -128,16 +131,153 @@ def save_recorde():
 # Página inicial do portal
 @app.route('/')
 def portal():
-    return render_template('index.html')
+    usuario = session.get('usuario')
+    return render_template('index.html', usuario=usuario)
 
-# Rota para o Snake (e qualquer outro jogo que você colocar em subpastas)
+# Rota para o Snake
 @app.route('/snake/')
-@app.route('/snake/<path:filename>')
-def snake(filename='index.html'):
-    return send_from_directory('templates/snake', filename)
+def snake():
+    usuario = session.get('usuario')
+    return render_template('snake/index.html', usuario=usuario, supabase_url=SUPABASE_URL, supabase_key=SUPABASE_KEY)
 
-# Você pode adicionar mais jogos assim:
-# @app.route('/pong/') ... etc
+# Rota para o Bomberman
+@app.route('/bomberman/')
+def bomberman():
+    usuario = session.get('usuario')
+    return render_template('bomberman/index.html', usuario=usuario)
+
+# Rota para o Breakout
+@app.route('/breakout/')
+def breakout():
+    usuario = session.get('usuario')
+    return render_template('breakout/index.html', usuario=usuario)
+
+# Rota para o Pinball
+@app.route('/pinball/')
+def pinball():
+    usuario = session.get('usuario')
+    return render_template('pinball/index.html', usuario=usuario)
+
+# Rota para o Frogger
+@app.route('/frogger/')
+def frogger():
+    usuario = session.get('usuario')
+    return render_template('frogger/index.html', usuario=usuario)
+
+# Rota para o Invaders
+@app.route('/invaders/')
+def invaders():
+    usuario = session.get('usuario')
+    return render_template('invaders/index.html', usuario=usuario)
+
+# Rota para o Racing
+@app.route('/racing/')
+def racing():
+    usuario = session.get('usuario')
+    return render_template('racing/index.html', usuario=usuario)
+
+# Rota para o Tank
+@app.route('/tank/')
+def tank():
+    usuario = session.get('usuario')
+    return render_template('tank/index.html', usuario=usuario)
+
+# Rota para o Tetris
+@app.route('/tetris/')
+def tetris():
+    usuario = session.get('usuario')
+    return render_template('tetris/index.html', usuario=usuario)
+
+# Sistema de Login
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form.get('username', '').strip()
+        password = request.form.get('password', '')
+
+        if not username or not password:
+            flash('Preencha todos os campos', 'error')
+            return redirect(url_for('login'))
+
+        users = load_users()
+        if username in users and users[username] == password:
+            session['usuario'] = username
+            flash('Login realizado com sucesso!', 'success')
+            return redirect(url_for('portal'))
+        else:
+            flash('Usuário ou senha incorretos', 'error')
+            return redirect(url_for('login'))
+
+    return render_template('login.html')
+
+# Sistema de Registro
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        username = request.form.get('username', '').strip()
+        password = request.form.get('password', '')
+        confirm_password = request.form.get('confirm_password', '')
+
+        if not username or not password or not confirm_password:
+            flash('Preencha todos os campos', 'error')
+            return redirect(url_for('register'))
+
+        if password != confirm_password:
+            flash('As senhas não coincidem', 'error')
+            return redirect(url_for('register'))
+
+        if len(username) < 3 or len(password) < 6:
+            flash('Usuário deve ter pelo menos 3 caracteres e senha pelo menos 6', 'error')
+            return redirect(url_for('register'))
+
+        users = load_users()
+        if username in users:
+            flash('Usuário já existe', 'error')
+            return redirect(url_for('register'))
+
+        users[username] = password
+        save_users(users)
+        session['usuario'] = username
+        flash('Registro realizado com sucesso!', 'success')
+        return redirect(url_for('portal'))
+
+    return render_template('register.html')
+
+# Logout
+@app.route('/logout')
+def logout():
+    session.pop('usuario', None)
+    flash('Logout realizado com sucesso!', 'success')
+    return redirect(url_for('portal'))
+
+# Páginas administrativas
+@app.route('/admin')
+def admin():
+    usuario = session.get('usuario')
+    if not usuario:
+        return redirect(url_for('login'))
+    return render_template('admin.html', usuario=usuario)
+
+@app.route('/bruno')
+def bruno():
+    usuario = session.get('usuario')
+    if not usuario:
+        return redirect(url_for('login'))
+    return render_template('bruno.htm', usuario=usuario)
+
+@app.route('/icaro')
+def icaro():
+    usuario = session.get('usuario')
+    if not usuario:
+        return redirect(url_for('login'))
+    return render_template('icaro', usuario=usuario)
+
+@app.route('/user')
+def user():
+    usuario = session.get('usuario')
+    if not usuario:
+        return redirect(url_for('login'))
+    return render_template('user.html', usuario=usuario)
 
 if __name__ == '__main__':
     app.run(debug=True)
